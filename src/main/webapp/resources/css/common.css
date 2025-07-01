@@ -1,0 +1,1086 @@
+/* *********************[ 메인페이지 ]******************************* */
+ 
+ /*#3 */
+.material-icons {
+
+  border: none;
+  outline: none;
+  background-color: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+ 
+
+.cal_body {
+  width: 450px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid white;
+  color: #666;
+}
+ 
+/*#6*/
+.cal_body .cal_set {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+.cal_body .cal_set .current-date {
+  font-size: 24px;
+  font-weight: 600;
+}
+.cal_body .cal_set button {
+  width: 38px;
+  height: 38px;
+  font-size: 30px;
+  color: #878787;
+}
+
+/*#7*/
+.calendar ul {
+  display: flex;
+  list-style: none;
+  flex-wrap: wrap;
+  text-align: center;
+}
+.calendar .weeks li {
+  font-weight: 500;
+}
+.calendar .days {
+  margin-bottom: 20px;
+}
+.calendar ul li {
+  /*#8*/
+  width: calc(100% / 7);
+  /*#9*/
+  position: relative;
+}
+.calendar .days li {
+  /*#10*/
+  z-index: 1;
+  margin-top: 30px;
+  cursor: pointer;
+}
+
+.calendar {
+  margin-right: 30px;
+}
+ 
+/*#11*/
+.days li.inactive {
+  color: #aaa;
+}
+
+.days li.active {
+  color: #fff;
+}
+.calendar .days li::before {
+  position: absolute;
+  content: '';
+  height: 40px;
+  width: 40px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: -1;
+}
+.days li:hover::before {
+  background: #f2f2f2;
+}
+.days li.active::before {
+  background: #008aff;
+}
+
+.main_notify_box {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 8px;
+  width: 60%;
+  margin-left: 40px;
+}
+
+.cteam_maindocu_group {
+  margin-top: 40px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  margin-bottom: 40px;
+  display: flex;
+}
+
+.main_middle_group {
+  display: flex;
+}
+
+.cteam_main_notify {
+  gap: 30px;
+  height: 35px;
+  border-bottom: 1px solid rgb(206, 206, 206);
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+
+
+/* *********************[ 메인페이지 ]******************************* */
+
+/* *********************[ 결재목록 ]******************************* */
+.page-wrapper{
+  max-width: 1780px;
+  margin: 0 auto;
+}
+
+.cteam_subtitle {
+    display: flex;
+}
+
+.cteam_head_maintitle {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.cteam_head_sub {
+    font-size: 16px;
+    margin-top: 5px;
+}
+
+.cteam_filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+select:hover{
+	background-color: #f0f4ff;
+}
+
+button:hover{
+	background-color: #f0f4ff;
+}
+
+.cteam_approval_item_inner:hover{
+  background-color: #f0f4ff;
+}
+
+
+.cteam_filter {
+    padding: 8px;
+    background-color: white;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid white;
+    color: #666;
+    cursor: pointer;
+    height: 40px;
+}
+
+.cteam_search {
+    display: flex;
+    position: relative;
+    margin-left: auto;
+}
+
+.cteam_search input {
+    width: 100%;
+    padding: 8px 35px 8px 12px;
+    border: 1px solid white;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    outline: none;
+    font-size: 14px;
+}
+
+.cteam_searchButton {
+    position: absolute;
+    right: 10px;
+    top: 20%;
+    transform: translateY(-10%);
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #666;
+}
+
+.cteam_approval_item_inner {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: left;
+}
+
+a.cteam_card_link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+}
+
+.cteam_info_group {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1;
+}
+
+.cteam_left {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 120px;
+}
+
+.cteam_icon {
+    font-size: 20px;
+}
+
+.cteam_title {
+    font-weight: bold;
+    font-size: 15px;
+    margin-right: 20px;
+}
+
+.cteam_desc {
+    font-size: 15px;
+    color: #666;
+    flex-grow: 1;
+    margin-top: 9px;
+}
+
+.cteam_right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cteam_date {
+    font-size: 14px;
+}
+
+.cteam_status_approval {
+    background-color: #b2ddee;
+    color: #002dfd;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+}
+
+.cteam_status_ongoing {
+    background-color: #fbf5b9;
+    color: #fb7600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+}
+
+.cteam_status_pending {
+    background-color: #daffe7;
+    color: #126b00;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+}
+
+.cteam_status_rejection {
+    background-color: #f8e6e3;
+    color: #e08e81;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+}
+
+
+
+/* *********************[ 문서보기 ]******************************* */
+
+ 
+ .title_left {
+   font-size: 24px;
+   margin-bottom: 15px;
+ }
+ 
+ 
+ .cteam_header_row {
+   display: flex;
+   align-items: center;
+   margin-bottom: 20px;
+   font-size: 15px;
+   font-weight: bold;
+   justify-content: center;   
+ }
+ 
+ 
+ .cteam_button_group {
+   justify-content: flex-end;
+ }
+ 
+
+ .cteam_middle_row {
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-start;
+   margin-bottom: 10px;
+ }
+ 
+ .cteam_view_filters {
+   flex-wrap: wrap;
+   gap: 20px;
+   flex: 1;
+ }
+ 
+ 
+ 
+ .cteam_form_group label {
+   margin-top: 6px;
+   margin-bottom: 20px;
+   font-size: 14px;
+   font-weight: bold;
+   color: #1a1a1a;
+ }
+ 
+ /*기안서 수정부분 라인*/
+ .cteam_document_type {
+   display: flex;
+   gap: 30px;
+   height: 35px;
+   border-bottom: 1px solid rgb(206, 206, 206);
+   margin-bottom: 20px;
+   width: 40%;
+ }
+ 
+ 
+ .cteam_drafter_box {
+   min-width: 250px;
+   margin-right: 20px;
+ }
+ 
+ 
+ .cteam_drafter_box label {
+   display: block;
+   margin-bottom: 8px;
+ }
+
+ .cteam_person_card_approvalview{
+   display: flex;
+   justify-content: space-between;
+   background: white;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+   border: 1px solid rgb(244, 244, 244);
+   border-radius: 12px;
+   padding: 10px;
+   width: 100%;
+   
+ }
+
+ .approval_line_title_group{
+  display: flex;
+  gap: 30px;
+ }
+
+ .approval_review {
+  margin-left: 15px;
+  border: none;
+  width: 500px;
+ }
+
+ .approval_review_view {
+  margin-top: 10px;
+ }
+
+ .cteam_btn_style_2 {
+
+  background-color: #b2ddee;
+  color: #002dfd;
+  border: 1px solid white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+  margin-left: 10px;
+ }
+ 
+ .cteam_person_card {
+   display: flex;
+   align-items: flex-start;
+   background: white;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+   border: 1px solid rgb(244, 244, 244);
+   border-radius: 12px;
+   padding: 10px 15px;
+ }
+
+ .cteam_person_card2 {
+  display: flex;
+  justify-content: space-between;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgb(244, 244, 244);
+  border-radius: 12px;
+  padding: 10px;
+}
+ 
+ .cteam_circle_avatar {
+   width: 45px;
+   height: 45px;
+   background-color: #cde6f7;
+   border-radius: 50%;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-weight: bold;
+   color: white;
+   margin-right: 12px;
+ }
+
+ .person_info_box {
+  display: flex;
+ }
+ 
+ .cteam_document_title{
+   padding: 10px 30px;
+   border-radius: 8px;
+   background: white;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+   border: 1px solid rgb(244, 244, 244);
+   margin-bottom: 20px;
+ }
+ 
+ .cteam_document_title_group label{
+   margin-bottom: 9px;
+   font-size: 14px;
+   font-weight: bold;
+   color: #1a1a1a;
+ }
+ 
+ .cteam_notearea_group label {
+   margin-bottom: 6px;
+   font-size: 14px;
+   font-weight: bold;
+   color: #1a1a1a;
+ }
+
+ .notearea {
+  padding: 50px 30px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgb(244, 244, 244);
+  margin-bottom: 10px;
+ }
+ 
+ 
+ textarea {
+   margin-top: 3px;
+   width: 98%;
+   height: 10em;
+   border: none;
+   resize: vertical;
+ 
+   border-radius: 8px;
+   background: white;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+   border: 1px solid rgb(244, 244, 244);
+   margin-bottom: 20px;
+ }
+ 
+ 
+ .cteam_approval_line {
+   display: flex;
+   gap: 20px;
+   align-items: center;
+   margin-bottom: 20px;
+   
+ }
+ 
+ 
+ .cteam_file_line {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   width: 28%;
+   border-bottom-style: solid;
+   border-bottom-width: 1px;
+   border-bottom-color: #ddd;
+ }
+ 
+ .cteam_file_line button {
+   padding: 5px 10px;
+   border-radius: 6px;
+   background: white;
+   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+   border: 1px solid white;
+   cursor: pointer;
+ } 
+ 
+ .cteam_form_group button:hover{
+  background-color: #f0f4ff;
+}
+
+
+
+
+
+
+/* *********************[ 문서작성 ]******************************* */
+.cteam_btn_style {
+  background-color: white;
+  border: 1px solid white;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+  margin-left: 10px;
+}
+
+.add_approver {
+  padding: 15px 80px;
+  border: 2px dashed #ddd;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.cteam_form_group .document_select, .cteam_documentNum, .cteam_writeDate{
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgb(244, 244, 244);
+}
+
+.cteam_document_title_input {
+  padding: 10px 30px;
+  width: 98%;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgb(244, 244, 244);
+  margin-bottom: 20px;
+  
+}
+
+.cteam_document_title_group {
+  display: flex;
+  
+  /*위에서 아래로 수직 배치*/
+  flex-direction: column;
+
+}
+
+
+/*기안서 작성 필터들 라인 정리*/
+.cteam_documentfilters_line {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.cteam_form_group select:hover{
+  background-color: #f0f4ff;
+}
+
+.cteam_form_group input:hover{
+  background-color: #f0f4ff;
+}
+
+.cteam_btn_location {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  bottom: 10px;
+}
+.file-list {
+	display: inline-block;
+	margin: 0;
+	padding: 0;
+}
+
+.file-list li {
+	list-style: none;
+	padding: 2px 0;
+	color: #333;
+}
+
+/****************************************************** 모달창 *******************************************************/
+
+.member_list_body {
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 10px 20px;
+}
+
+.member_group {
+  margin-bottom: 20px;
+}
+
+.group_title {
+  font-weight: bold;
+  font-size: 16px;
+  color: #4891dd;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.member {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: background 0.2s ease-in-out;
+}
+
+.member.clickable {
+  cursor: pointer;
+  border: 1px solid transparent;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.member.selected {
+  border: 2px solid #007bff;
+  background-color: #e9f3ff;
+}
+
+.member:hover {
+  background-color: #f0f4ff;
+}
+
+.info {
+  font-size: 14px;
+}
+
+
+/****************************************************** 모달창 *******************************************************/
+
+
+/****************************************************** 공지사항 *******************************************************/
+.notice-category {
+  display: flex;
+  flex-direction: column;
+}
+
+.notice-margin {
+	margin-top: 0;
+}
+
+.nav-container {
+  	display: flex;
+  	justify-content: space-between;
+  	align-items: center;
+  	width: 100%;
+    padding-top: 15px;
+}
+
+.nav{
+	display: flex;
+    width: 40%;
+}
+
+.nav-container .cteam_search{
+	margin-top: -30px;
+}
+
+.nav-item {
+    flex-grow: 1;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.nav-link {
+    font-size: 16px;  
+    font-weight: bold;
+    display: block;
+    width: 50%;
+    justify-content: center;
+    align-items: center; 	
+}
+.nav-underline{
+	display: flex;
+    width: 50%;
+	--bs-nav-underline-gap: 0;
+}
+
+.notice-category-header {
+  display: flex;
+  font-weight: bold;
+  background-color: #f4f4f4;
+  padding: 0 10px 10px 10px;
+  width:100%;
+}
+
+.notice-category-row {
+  display: flex;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  width:100%;
+  text-decoration: none;
+  color: inherit; 
+}
+
+.notice-category-header div,
+.notice-category-row div {
+  padding: 5px;
+}
+
+.notice-category-row:hover {
+  background-color: #f1f1f1;
+}
+
+.notice-category-row .notice-category-title{
+	text-align: left;
+}
+
+.notice-category-num,
+.notice-category-title,
+.notice-category-team,
+.notice-category-author,
+.notice-category-date {
+	text-align: center;
+}
+
+.notice-category-num{
+	width: 5%;
+}
+
+.notice-category-title{
+	width: 65%;
+}
+
+.notice-category-team{
+	width: 5%;
+}
+
+.notice-category-author{
+	width: 10%;
+}
+
+.notice-category-date{
+	width: 15%;
+}
+
+.notice-container {
+	border: 1px solid #ccc;
+	padding: 20px;
+	border-radius: 10px;
+	background-color: #fff;
+}
+.notice-title {
+	font-size: 24px;
+	margin-bottom: 20px;
+}
+.notice-form .notice-row {
+	display: flex;
+	align-items: center;
+	margin-bottom: 15px;
+	flex-wrap: wrap;
+}
+.notice-label {
+	min-width: 80px;
+	font-weight: bold;
+	margin-right: 10px;
+}
+
+.notice-checkbox-team{
+	margin-right: 20px;
+}
+.notice-label.required::before {
+	content: '*';
+	color: red;
+	margin-right: 3px;
+}
+.notice-input.long {
+	flex: 1;
+	margin-left: 10px;
+	padding: 5px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+}
+.file-upload-box {
+	border: 1px solid #ccc;
+	border-radius: 10px;
+	padding: 20px;
+	width: 100%;
+	background-color: #fafafa;
+	text-align: center;
+}
+.file-upload-area {
+	margin-bottom: 10px;
+}
+.file-icon {
+	font-size: 40px;
+	color: #00bfff;
+}
+.file-upload-buttons .file-btn {
+	margin: 5px;
+	padding: 8px 12px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	background-color: #fff;
+	cursor: pointer;
+}
+.notice-editor {
+	width: 100%;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	min-height: 200px;
+	resize: vertical;
+}
+.notice-actions {
+	text-align: right;
+	margin-top: 20px;
+}
+
+/****************************************************** 공지사항 *******************************************************/
+
+/****************************************************** 페이지네이션 *******************************************************/
+.list-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 10px;
+}
+
+.pagination-nav {
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.pagination {
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+.page-item {
+  list-style: none;
+}
+
+.user-reg-del {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/****************************************************** 페이지네이션 끝*******************************************************/
+
+/****************************************************** 부트스트랩 확장스타일*******************************************************/
+.mama-btn .btn{
+	border: 1px solid black;
+}
+.mama-btn .btn:hover{
+	background-color: #5B6582;
+}
+.mama-btn .btn:hover i {
+    color: white;
+}
+/****************************************************** 부트스트랩 확장스타일 끝*******************************************************/
+
+/****************************************************** 사원관리*******************************************************/
+
+
+.staff-management .mana-list th,td{
+	text-align:center;
+}
+
+.staff-management .mana-category {
+	text-align:center;
+}
+.staff-management {
+	margin-top:20px;
+}
+.click-cell {
+    cursor: pointer;
+}
+
+.user_form_group {
+	margin-bottom: 30px;
+}
+ 
+.user_option_group{
+ 	display: flex;
+ 	gap: 20px;
+  	align-items: center;
+} 
+ 
+.user_form_group label {
+   margin-top: 6px;
+   font-size: 14px;
+   font-weight: bold;
+   color: #1a1a1a;
+ }
+ 
+ .user_form_group button:hover{
+  background-color: #f0f4ff;
+}
+
+.document_select, .user_documentNum, .user_writeDate{
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgb(244, 244, 244);
+}
+
+.user_num{
+  width: 60px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgb(244, 244, 244);
+}
+
+.user_ResiNum{
+  width: 100px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgb(244, 244, 244);
+}
+.user_documentfilters_line {
+  display: flex;
+  align-items: center;
+  
+}
+
+.user_documentfilters_line label + input,
+.user_documentfilters_line label + select {
+  margin-left: 30px;
+}
+
+.user_form_group select:hover{
+  background-color: #f0f4ff;
+}
+
+.user_form_group input:hover{
+  background-color: #f0f4ff;
+}
+.sc {
+  margin: 0 15px;
+  vertical-align: middle;
+  font-weight: bold;
+}
+.cteam_person_card .authority {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cteam_person_card .authority input[type="radio"] {
+  margin-right: 5px;
+  position: relative;
+  top: 2px;
+}
+
+input.user_documentNum[readonly],
+input.user_writeDate[readonly],
+input.user_ResiNum[readonly],
+input.user_num[readonly] {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
+ /****************************************************** 사원세부정보*******************************************************/
+
+
+/*사원명*/
+.user_label01{
+	margin-right: 14px;
+}
+
+/*메일주소 @*/
+.user_email02{
+	display:inline-block; 
+}
+	
+/*부서 */
+.user_label03{
+	margin-right: 30px;
+}
+/*직급 */
+.user_label06{
+	margin-left: 30px;
+}
+/*상태 */
+.user_label07{
+	margin-left: 30px;
+}
+
+/*사원ID*/
+.user_label04{
+	margin-right: 14px;		
+}
+
+/*사원PW*/
+.user_label05{
+	margin-right: 5px;		
+}
+
+/****************************************************** 사원세부정보*******************************************************/
+ 
+
+/****************************************************** 사원관리 끝*******************************************************/
+/****************************************************** footer 시작*******************************************************/
+.custom-footer {
+  white-space: nowrap;
+  width: 100%;
+}
+
+.home-icon {
+  min-width: 40px;
+}
+
+.address-text {
+  margin-left: auto;
+  text-align: right;
+}
+.address-text .nav-link {
+  text-align: right;
+}
+
+/****************************************************** footer 끝*******************************************************/

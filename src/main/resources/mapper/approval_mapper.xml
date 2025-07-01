@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.approval">
+	<!-- approvalVO에 있는 userVO drafter(기안자) 정보 매핑 -->
+    <resultMap id="approvalDetailMap" type="com.erp.vo.approvalVO">
+        <!-- approval 테이블 컬럼 매핑 -->
+        <id property="approval_no" column="approval_no"/>				<!--기안서 번호에 저장 할 값-->
+        <result property="kind" column="kind"/>							<!--문서구분-->
+        <result property="approval_code" column="approval_code"/>		<!--품의번호-->
+        <result property="writedate" column="writedate"/>				<!--작성일자-->
+        <result property="approval_title" column="approval_title"/>		<!--제목-->
+        <result property="approval_content" column="approval_content"/>	<!--내용-->
+        <result property="document_status" column="document_status"/>	<!--문서구분-->
+        <result property="usernum" column="usernum"/>					<!--기안자 정보 가져옴-->
+        
+
+        <!-- 연관된 userVO(작성자) 매핑 -->
+        <association property="drafter" javaType="com.erp.vo.userVO">
+            <id property="usernum" column="drafter_usernum"/> <!-- 사원번호 -->
+            <result property="name" column="drafter_name"/>     <!-- 이름 -->
+            <result property="team" column="drafter_team"/>     <!-- 부서 -->
+            <result property="level" column="drafter_level"/>   <!-- 직급 -->
+        </association>
+    </resultMap>
+
+	<!-- 결재자(approver) 정보 매핑 -->
+	<resultMap id="approvalLineMap" type="com.erp.vo.approval_line_VO">
+        <result property="approval_no" column="approval_no"/>
+        <result property="approval_target" column="approval_target"/>
+        <result property="approval_status" column="approval_status"/>
+        <result property="approval_sort" column="approval_sort"/>
+        <result property="approval_date" column="approval_date"/>
+        <result property="comment" column="comment"/>
+
+        <!-- userVO(결재자) 매핑 -->
+        <association property="approver" javaType="com.erp.vo.userVO">
+            <!-- JOIN된 user 테이블 컬럼(별칭 사용)을 userVO 필드에 매핑 -->
+            <id property="usernum" column="approver_usernum"/> <!-- 사원번호 -->
+            <result property="name" column="approver_name"/>     <!-- 이름 -->
+            <result property="team" column="approver_team"/>     <!-- 부서 -->
+            <result property="level" column="approver_level"/>   <!-- 직급 -->
+        </association>
+    </resultMap>
+
+    <!-- 목록 조회를 위한 resultMap -->
+    <resultMap id="approvalListMap" type="com.erp.vo.approvalVO">
+         <id property="approval_no" column="approval_no"/>
+        <result property="kind" column="kind"/>
+        <result property="approval_title" column="approval_title"/>
+        <result property="writedate" column="writedate"/>
+        <result property="document_status" column="document_status"/>
+        <result property="usernum" column="usernum"/>
+
+        <!--userVO(작성자) 매핑 -->
+        <association property="drafter" javaType="com.erp.vo.userVO">
+            <id property="usernum" column="drafter_usernum"/>
+            <result property="name" column="drafter_name"/>
+            <result property="team" column="drafter_team"/>
+            <result property="level" column="drafter_level"/>
+        </association>
+    </resultMap>
+
+	<!-- ============================================================== -->
+	<!-- 0. 결재라인 목록 가져오기                               -->
+	<!-- ============================================================== -->
+	<select id="lineApproval" parameterType="com.erp.vo.userVO" resultType="com.erp.vo.userVO">
+		select usernum,name,team,level
+		from user 
+		where authority = false and usernum != #{usernum}
+		order by field (team,null,'개발','디자인','경영지원'), level asc;	
+	</select>
+	<!-- ============================================================== -->
+	<!-- 1. 결재 문서 생성 (Write) 관련                                   -->
+	<!-- ============================================================== -->
+	<insert id="insertApproval" parameterType="com.erp.vo.approvalVO" useGeneratedKeys="true" keyProperty="approval_no" keyColumn="approval_no">
+		INSERT INTO approval ( 
+		kind, approval_code, approval_title, approval_content, document_status, usernum
+		)
+        VALUES ( 
+        #{kind}, #{approval_code}, #{approval_title}, #{approval_content}, '대기중', #{usernum} 
+        )
+	</insert>
+	<!-- 첨부파일  -->
+	<insert id="insertApprovalFiles" parameterType="java.util.List">
+		INSERT INTO approval_file ( approval_no, apname, afname ) VALUES
+		<foreach collection="list" item="file" separator=",">
+		(#{file.approval_no}, #{file.apname}, #{file.afname})
+		</foreach>
+	</insert>
+	<!-- 결재선 추가 -->
+	<insert id="insertApprovalLines" parameterType="java.util.List">
+		INSERT INTO approval_line (
+		approval_no, approval_target, approval_status, approval_sort, approval_date, comment
+		) VALUES
+		<foreach collection="list" item="line" separator=",">
+			( #{line.approval_no}, #{line.approval_target}, '대기', #{line.approval_sort}, NULL, NULL )
+		</foreach>
+	</insert>
+
+	<!-- ============================================================== -->
+	<!-- 2. 결재 문서 조회 (View) 관련 (resultMap 및 JOIN 별칭 적용)     -->
+	<!-- ============================================================== -->
+	
+	<!-- 2.1. 결재 문서 상세 정보 조회 -->
+	<select id="selectApprovalDetail" parameterType="int" resultMap="approvalDetailMap">
+		SELECT
+		    a.approval_no, a.kind, a.writedate, a.approval_title, a.approval_content,
+		    a.document_status, a.usernum, a.approval_code,
+            u.usernum   AS drafter_usernum,
+		    u.name      AS drafter_name,
+            u.team      AS drafter_team,
+            u.level     AS drafter_level
+		FROM
+		    approval a
+		LEFT JOIN
+            user u ON a.usernum = u.usernum
+		WHERE
+		    a.approval_no = #{approval_no}
+	</select>
+
+	<!-- 2.2. 특정 결재 문서의 첨부파일 목록 조회 -->
+	<select id="selectApprovalFiles" parameterType="int" resultType="com.erp.vo.approval_file_VO">
+		SELECT approval_no, apname, afname FROM approval_file WHERE approval_no = #{approval_no}
+	</select>
+
+	<!-- 2.3. 특정 결재 문서의 결재선 목록 조회 -->
+	<select id="selectApprovalLines" parameterType="int" resultMap="approvalLineMap">
+		SELECT
+		    al.approval_no, al.approval_target, al.approval_status,
+		    al.approval_sort, al.approval_date, al.comment,
+            u.usernum   AS approver_usernum,
+		    u.name      AS approver_name,
+            u.team      AS approver_team,
+            u.level     AS approver_level
+		FROM
+		    approval_line al
+		LEFT JOIN
+            user u ON al.approval_target = u.usernum
+		WHERE
+		    al.approval_no = #{approval_no}
+		ORDER BY
+		    al.approval_sort ASC
+	</select>
+
+	<!-- ============================================================== -->
+	<!-- 3. 결재 처리 (View에서 승인/반려 시) 관련                        -->
+	<!-- ============================================================== -->
+	<update id="updateApprovalLineStatus" parameterType="com.erp.vo.approval_line_VO">
+		UPDATE approval_line SET approval_status = #{approval_status}, approval_date = #{approval_date}, comment = #{comment}
+		WHERE approval_no = #{approval_no} AND approval_target = #{approval_target}
+	</update>
+	<update id="updateDocumentStatus">
+		UPDATE approval SET document_status = #{document_status} WHERE approval_no = #{approval_no}
+	</update>
+    <select id="getApprovalLineStatuses" parameterType="int" resultType="com.erp.vo.approval_line_VO">
+        SELECT approval_status, approval_sort FROM approval_line WHERE approval_no = #{approval_no} ORDER BY approval_sort ASC
+    </select>
+
+	<update id="updateDocumentStatusAuto" parameterType="int">
+    UPDATE approval
+    SET document_status = 
+        CASE 
+        	WHEN EXISTS (
+                SELECT 1 FROM approval_line
+                WHERE approval_no = #{approval_no}
+                AND approval_status = '반려'
+            ) THEN '반려'
+
+            WHEN (
+                SELECT COUNT(*) FROM approval_line
+                WHERE approval_no = #{approval_no}
+                AND approval_status = '승인'
+            ) = (
+                SELECT COUNT(*) FROM approval_line
+                WHERE approval_no = #{approval_no}
+            ) THEN '승인'
+
+            WHEN EXISTS (
+                SELECT 1 FROM approval_line
+                WHERE approval_no = #{approval_no}
+                AND approval_status IN ('승인', '반려')
+            ) AND (
+                SELECT COUNT(*) FROM approval_line 
+                WHERE approval_no = #{approval_no}
+                AND approval_status IS NULL
+            ) > 0 THEN '진행중'
+
+            WHEN NOT EXISTS (
+                SELECT 1 FROM approval_line
+                WHERE approval_no = #{approval_no}
+                AND approval_status IN ('승인', '반려')
+            ) THEN '대기중'
+
+            ELSE '진행중'
+        END
+    WHERE approval_no = #{approval_no}
+	</update>
+	
+	<!-- ============================================================== -->
+	<!-- 4. 결재 문서 수정 ('대기중' 상태일 때) 관련                      -->
+	<!-- ============================================================== -->
+	<update id="updateApproval" parameterType="com.erp.vo.approvalVO">
+    <!-- 결재 상태가 대기, 반려일 때만 수정 가능 -->
+	    UPDATE approval
+	    SET kind = #{kind}, approval_title = #{approval_title}, approval_content = #{approval_content}, approval_code = #{approval_code}
+	    WHERE approval_no = #{approval_no} AND (document_status = '대기중' OR document_status = '반려')
+	</update>
+	
+	<update id="updateApprovalStatusToPending" parameterType="int">
+	    <!-- 수정 후 결재 상태를 대기중으로 변경 -->
+	    UPDATE approval
+	    SET document_status = '대기중'
+	    WHERE approval_no = #{approval_no}
+	</update>
+	<!-- 첨부파일  -->
+	<update id="modifyApprovalFiles" parameterType="java.util.List">
+	    <foreach collection="list" item="file" separator=";">
+	    
+	        <if test='file.afname != null and file.afname != ""'>
+	    	UPDATE approval SET    
+	    	    afname = #{file.afname},
+	            apname = #{file.apname}
+	            where approval_no = #{file.approval_no}
+	        </if>
+	        
+	</foreach>
+	</update>
+	<!-- 결재선 추가 -->
+	<insert id="modifyApprovalLines" parameterType="java.util.List">
+		INSERT INTO approval_line (
+		approval_target, approval_status, approval_sort, approval_date, comment
+		) VALUES
+		<foreach collection="list" item="line" separator=",">
+			( #{line.approval_target}, '대기', #{line.approval_sort}, NULL, NULL )
+		</foreach>
+	</insert>
+	
+	<delete id="deleteApproval" parameterType="map">
+		delete from approval where approval_no = #{approval_no}
+		and document_status = '대기중'
+		and usernum = #{usernum}
+	</delete>
+	<delete id="deleteApprovalFiles" parameterType="int">
+		DELETE FROM approval_file WHERE approval_no = #{approval_no}
+	</delete>
+	<delete id="deleteApprovalLines" parameterType="int">
+		DELETE FROM approval_line WHERE approval_no = #{approval_no}
+	</delete>
+	<!-- ============================================================== -->
+	<!-- 5. 결재 문서 목록 (List) 관련 (resultMap 및 JOIN 별칭 적용)     -->
+	<!-- ============================================================== -->
+	<select id="selectAppList" parameterType="map" resultMap="approvalListMap">
+		SELECT
+			a.approval_no, a.kind, a.approval_title, a.writedate, a.document_status,
+			a.usernum,
+			u.usernum AS drafter_usernum,
+			u.name AS drafter_name,
+			u.team AS drafter_team,
+			u.level AS drafter_level
+		FROM approval a
+		LEFT JOIN user u ON a.usernum = u.usernum
+		WHERE a.usernum = #{usernum}
+		
+		<if test="kind != null and kind != ''">
+			AND a.kind = #{kind}
+		</if>
+		<if test="status != null and status != ''">
+			AND a.document_status = #{status}
+		</if>
+		<if test="keyword != null and keyword != ''">
+			AND a.approval_title LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		ORDER BY a.approval_no DESC
+		LIMIT #{offset}, #{limit}
+	</select>
+	
+    <select id="countAppList" parameterType="map" resultType="int">
+        SELECT COUNT(*)
+        FROM approval a
+        WHERE a.usernum = #{usernum}
+        
+       <if test="kind != null and kind != ''">
+		AND a.kind = #{kind}
+		</if>
+		<if test="status != null and status != ''">
+			AND a.document_status = #{status}
+		</if>
+		<if test="keyword != null and keyword != ''">
+			AND (a.approval_title LIKE CONCAT('%', #{keyword}, '%'))
+		</if>
+    </select>
+    
+    <!-- 2.2 결재수신 관련 -->
+    <!-- 결재 수신함 전용: 내가 결재선에 포함된 문서만 -->
+    
+	<select id="selectRecvApprovalList" parameterType="map" resultMap="approvalListMap">
+		SELECT
+			a.approval_no, a.kind, a.approval_title, a.writedate, a.document_status,
+			a.usernum,
+			u.usernum AS drafter_usernum,
+			u.name AS drafter_name,
+			u.team AS drafter_team,
+			u.level AS drafter_level
+		FROM approval a
+		JOIN approval_line al ON a.approval_no = al.approval_no
+		LEFT JOIN user u ON a.usernum = u.usernum
+		WHERE al.approval_target = #{usernum}
+		
+		<if test="kind != null and kind != ''">
+			AND a.kind = #{kind}
+		</if>
+		<if test="status != null and status != ''">
+			AND a.document_status = #{status}
+		</if>
+		<if test="keyword != null and keyword != ''">
+			AND a.approval_title LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		ORDER BY a.approval_no DESC
+		LIMIT #{offset}, #{limit}
+	</select>
+	<!-- 2.3 전체승인내역 조회 -->
+	<select id="selectListAll" parameterType="map" resultMap="approvalListMap">
+		SELECT
+			a.approval_no, a.kind, a.approval_title, a.writedate, a.document_status,
+			a.usernum,
+			u.usernum AS drafter_usernum,
+			u.name AS drafter_name,
+			u.team AS drafter_team,
+			u.level AS drafter_level
+		FROM approval a
+		LEFT JOIN user u ON a.usernum = u.usernum
+		WHERE a.approval_no IN (
+			SELECT al.approval_no
+			FROM approval_line al
+			GROUP BY al.approval_no
+			HAVING SUM(CASE WHEN al.approval_status = '승인' THEN 1 ELSE 0 END) = COUNT(*)
+		)
+		AND a.document_status = '승인'
+		
+		<if test="kind != null and kind != ''">
+			AND a.kind = #{kind}
+		</if>
+		<if test="keyword != null and keyword != ''">
+			AND a.approval_title LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="team != null and team != ''">
+        	AND u.team = #{team}
+    	</if>
+		ORDER BY a.approval_no DESC
+		LIMIT #{offset}, #{limit}
+	</select>
+	
+	<select id="selectListAllCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM approval a
+		WHERE a.approval_no IN (
+			SELECT al.approval_no
+			FROM approval_line al
+			GROUP BY al.approval_no
+			HAVING SUM(CASE WHEN al.approval_status = '승인' THEN 1 ELSE 0 END) = COUNT(*)
+		)
+		AND a.document_status = '승인'
+		
+		<if test="kind != null and kind != ''">
+			AND a.kind = #{kind}
+		</if>
+		<if test="keyword != null and keyword != ''">
+			AND a.approval_title LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+	</select>
+	
+	<!-- 수신함 전용 count -->
+	<select id="countRecvApprovalList" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM approval a
+		WHERE a.approval_no IN (
+		    SELECT approval_no
+		    FROM approval_line
+		    WHERE approval_target = #{usernum}
+		)
+		<if test="kind != null and kind != ''">
+			AND a.kind = #{kind}
+		</if>
+		<if test="status != null and status != ''">
+			AND a.document_status = #{status}
+		</if>
+		<if test="keyword != null and keyword != ''">
+			AND a.approval_title LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+	</select>
+	
+	
+</mapper>

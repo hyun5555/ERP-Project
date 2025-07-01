@@ -1,0 +1,123 @@
+user table
+사원명
+주민번호앞(6자)-뒷(1)
+전화번호
+내선번호
+메일주소 
+부서 --> 경영지원:1, 개발:2, 디자인:3
+직급 --> 사장:1, 팀장:2, 대리:3, 사원:4
+상태 --> 재직:1, 퇴직:2, 휴직:3
+사원번호 -->사원ID = 사원번호 = 입사연도+난수(4)
+사원PW --> ezen123
+처음로그인시 컬럼 --> 사원PW:ezen123일 경우 y / 그 이후 사원PW입력시: n
+입사일자
+권한구분 --> 사원:1 / 관리자:2
+======================================
+approval table
+전자결재no
+-작성자 = 사원명
+-작성자 부서 --> 경영지원:1, 개발:2, 디자인:3
+-작성자 직급 --> 사장:1, 팀장:2, 대리:3, 사원:4
+
+문서구분 --> 품의서:1 , 기안서:2, 연차신청서:3
+품의번호 --> 작성연월일(6자)-금일 등록된 문서 순번(4자) 자동입력
+기안서 작성일자 --> '2025-03-25'의 양식을 따르며, 자동 입력
+제목
+내용
+첨부파일 물리파일명 pname
+첨부파일 논리파일명 fname
+
+-결재자 = 사원명
+-결재자 부서 --> 경영지원:1, 개발:2, 디자인:3
+-결재자 직급 --> 사장:1, 팀장:2, 대리:3, 사원:4
+
+코멘트
+결재여부 일자 --> '2025-03-25'의 양식을 따르며, 자동 입력
+결재상태 --> 승인, 진행중(부분승인), 반려, 대기중(승인없음)
+
+===============================================================================
+notice table
+공지사항no
+-작성자 = 관리자ID
+제목
+내용
+검색 제목+내용
+중요여부 --> 체크됨: 1, 체크안됨: 2
+메인노출여부 --> 체크됨: 1, 체크안됨: 2
+-공지대상 = 부서 --> 경영지원:1, 개발:2, 디자인:3
+공지일자 --> '2025-03-25'의 양식을 따르며, 자동 입력
+첨부파일 물리파일명 pname
+첨부파일 논리파일명 fname
+-- =======================================공지사항 테이블================================================
+use erp;
+create table notice	
+(
+    notice_no INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    notice_title VARCHAR(255) NOT NULL,
+    notice_content VARCHAR(255) NOT NULL,
+    is_important BOOLEAN DEFAULT FALSE,
+    is_main BOOLEAN DEFAULT FALSE,
+    notice_team VARCHAR(255),                      
+    pname VARCHAR(255),
+    fname VARCHAR(255),
+    joindate DATETIME DEFAULT CURRENT_TIMESTAMP,
+    usernum VARCHAR(50) UNIQUE
+);
+-- =======================================공지사항 팀 분류 테이블================================================
+create table notice_team
+(	
+	notice_no INT NOT NULL,
+	notice_team VARCHAR(50),
+    FOREIGN KEY (notice_no) REFERENCES notice(notice_no) ON DELETE CASCADE
+);
+-- =======================================유저 테이블================================================
+create table user (
+    usernum VARCHAR(50) PRIMARY KEY, 
+    userpw VARCHAR(50) NOT NULL,
+    name VARCHAR(20) NOT NULL,
+    idnum VARCHAR(50),
+    phonenum INT,
+    officenum INT,
+    email VARCHAR(100),
+    team VARCHAR(50),
+    level VARCHAR(50),
+    firstlogin TINYINT,
+    joindate DATETIME,
+    authority BOOLEAN,
+    level_num INT
+);
+-- =======================================전자결재 테이블================================================
+CREATE TABLE approval (
+    approval_no INT PRIMARY KEY AUTO_INCREMENT,
+    kind VARCHAR(50),
+    writedate DATETIME,
+    approval_title VARCHAR(255),
+    approval_content TEXT,
+    document_status TINYINT,
+    usernum VARCHAR(50),
+    code VARCHAR(255),
+    FOREIGN KEY (usernum) REFERENCES user(usernum) ON DELETE CASCADE
+);
+-- =======================================결재 파일 테이블================================================
+CREATE TABLE approval_file (
+    approval_no INT,
+    apname VARCHAR(20),
+    afname VARCHAR(20),
+    PRIMARY KEY (approval_no, apname),
+    FOREIGN KEY (approval_no) REFERENCES approval(approval_no) ON DELETE CASCADE
+);
+-- =======================================결재선 테이블================================================
+CREATE TABLE approval_line (
+    approval_no INT,
+    approval_target VARCHAR(20),
+    approval_status TINYINT,
+    approval_sort INT,
+    approval_date DATETIME,
+    comment VARCHAR(50),
+    PRIMARY KEY (approval_no, approval_target),
+    FOREIGN KEY (approval_no) REFERENCES approval(approval_no) ON DELETE CASCADE
+);
+
+
+
+

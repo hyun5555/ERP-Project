@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.user">
+	<insert id="insert" parameterType="com.erp.vo.userVO">
+		insert into user
+		(usernum, userpw, name, idnum1, idnum2, phonenum, 
+		officenum, email, team, level, firstlogin, 
+		authority, level_num, user_status) 
+		values(#{usernum}, md5(#{userpw}), #{name}, #{idnum1}, #{idnum2}, #{phonenum}, #{officenum}, #{email},
+		#{team}, #{level}, #{firstlogin}, #{authority}, #{level_num}, #{user_status})
+	</insert>
+	
+	<delete id="delete" parameterType="com.erp.vo.userVO">
+		delete from user where usernum = #{usernum}
+	</delete>
+	 
+	<select id="checkid" parameterType="java.lang.String" resultType="java.lang.Integer">
+		select count(*) from user where usernum = #{usernum}
+	</select>
+	
+	<select id="user_info" parameterType="java.lang.String" resultType="com.erp.vo.userVO">
+		select usernum, userpw, name, idnum1, idnum2, phonenum, 
+	    officenum, email, team, level, joindate, authority, 
+	    firstlogin, user_status, level_num
+		from user
+		where usernum = #{usernum}
+	</select>
+	
+	
+	<select id="user_list" parameterType="com.erp.vo.searchVO" resultType="com.erp.vo.userVO">
+		select usernum, name, officenum, email, team, level, user_status 
+		from user
+		where 1=1
+		<if test="team != null and team != ''">
+		AND team = #{team}
+		</if>
+		<if test="level != null and level != ''">
+			AND level = #{level}
+		</if>
+		<if test="user_status != null and user_status != ''">
+			AND user_status = #{user_status}
+		</if>
+		<if test="searchKey != null and searchWord != null and searchWord != ''">
+			<choose>
+				<when test="searchKey == 'usernum'">
+					AND usernum LIKE CONCAT('%', #{searchWord}, '%')
+				</when>
+				<when test="searchKey == 'name'">
+					AND name LIKE CONCAT('%', #{searchWord}, '%')
+				</when>
+			</choose>
+		</if>
+		order by field(team, '임원', '개발', '경영지원', '디자인'), level_num
+		limit #{offset}, 10
+	</select>
+	
+	
+	<select id="user_total_count" parameterType="com.erp.vo.searchVO" resultType="int">
+		select count(*) from user
+		where 1=1
+		<if test="team != null and team != ''">
+			AND team = #{team}
+		</if>
+		<if test="level != null and level != ''">
+			AND level = #{level}
+		</if>
+		<if test="user_status != null and user_status != ''">
+			AND user_status = #{user_status}
+		</if>
+		<if test="searchKey != null and searchWord != null and searchWord != ''">
+			<choose>
+				<when test="searchKey == 'name'">
+					AND name LIKE CONCAT('%', #{searchWord}, '%')
+				</when>
+				<when test="searchKey == 'usernum'">
+					AND usernum LIKE CONCAT('%', #{searchWord}, '%')
+				</when>
+			</choose>
+		</if>
+	</select>
+
+
+	<select id="user_modal_list" parameterType="com.erp.vo.userVO" resultType="com.erp.vo.userVO">
+		select usernum, name, team, level, level_num
+		from user
+		order by field(team, '임원', '개발팀', '경영지원팀', '디자인팀'),
+		level_num ASC
+	</select>
+	
+	
+	<select id="login" parameterType="com.erp.vo.userVO" resultType="com.erp.vo.userVO">
+		select usernum, userpw, name, idnum1, idnum2, phonenum, 
+		officenum, email, team, level, firstlogin, 
+		joindate, authority, level_num, user_status
+		from user
+		where usernum = #{usernum} and userpw = md5(#{userpw})
+	</select>
+	
+	<update id="update" parameterType="com.erp.vo.userVO">
+		update user set
+			<if test="userpw != null and userpw != ''">
+			userpw = md5(#{userpw}),
+			</if>
+			name = #{name},
+			idnum1 = #{idnum1},
+			idnum2 = #{idnum2},
+			phonenum = #{phonenum},
+			officenum = #{officenum},
+			email = #{email},
+			team = #{team},
+			level = #{level},
+			authority = #{authority},
+			user_status = #{user_status}
+		where usernum = #{usernum}
+	</update>
+	
+	<update id="updateFirstLogin" parameterType="java.lang.String">
+		update user set
+		firstlogin = false
+		where usernum = #{usernum}
+	</update>
+	
+	<update id="changePasswordAndFirstLogin" parameterType="com.erp.vo.userVO">
+		update user set 
+		userpw = md5(#{userpw}),
+		firstlogin = false
+		where usernum = #{usernum}
+	</update>
+	
+	<select id="findnum" parameterType="java.lang.String" resultType="java.lang.Integer">
+	select count(*) 
+	from user
+	where usernum = #{usernum}
+	</select>
+	
+</mapper>

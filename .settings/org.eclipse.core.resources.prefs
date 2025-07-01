@@ -1,0 +1,9 @@
+eclipse.preferences.version=1
+encoding//document/ERP.sql=UTF-8
+encoding//document/table.txt=UTF-8
+encoding//src/main/java/com/erp/control/approvalController.java=UTF-8
+encoding//src/main/java/com/erp/control/noticeController.java=UTF-8
+encoding//src/main/java/com/erp/control/userController.java=UTF-8
+encoding//src/main/java/com/erp/dto/noticeDTO.java=euc-kr
+encoding//src/main/java/com/erp/dto/userDTO.java=UTF-8
+encoding//src/main/java/com/erp/vo=euc-kr
