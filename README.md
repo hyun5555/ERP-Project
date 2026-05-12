@@ -35,7 +35,7 @@ EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리 기능을 통�
 
 ---
 
-# 📌 내가 수행한 요소
+# 🧑‍💻프로젝트 수행 요소
 
 ## ✔ 결재선 시스템
 
@@ -95,7 +95,7 @@ EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리 기능을 통�
 
 ---
 
-# 🧩 DB 설계
+# 🔨 DB 설계
 
 <p align="center">
   <img width="713" height="535" alt="Image" src="https://github.com/user-attachments/assets/d86fdd61-12da-41c7-b009-f23c3d424226" />
@@ -118,6 +118,9 @@ EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리 기능을 통�
    ↓
 최종 승인 시 전체 열람 가능
 ```
+
+---
+
 
 ### ✔ 주요 기능
 
