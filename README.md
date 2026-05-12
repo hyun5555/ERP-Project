@@ -73,15 +73,15 @@ EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리 기능을 통�
 
 ## Frontend
 
-* HTML5
-* CSS3
+* HTML
+* CSS
 * JavaScript
 * jQuery
 * Bootstrap
 
 ## Database
 
-* MySQL 8.0
+* MySQL
 
 ## Tools
 
@@ -89,9 +89,7 @@ EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리 기능을 통�
 * Visual Studio Code
 * SVN
 * Tomcat 9
-* exERD
 * StarUML
-* Pixso
 
 ---
 
