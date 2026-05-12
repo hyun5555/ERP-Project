@@ -1,4 +1,4 @@
-# EZENT ERP
+# ERP-Project
 
 ### Spring Framework 기반 기업 전자결재 웹 서비스
 
