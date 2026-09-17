@@ -29,11 +29,14 @@ MySQL 컨테이너가 자동으로 기동되고 `http://localhost:8080/ERP/`가 
 
 ```bash
 ./mvnw test
-./scripts/benchmark.sh after-security-login-refactor
+./scripts/benchmark.sh 측정이름
 ```
 
-통합 테스트는 실제 MySQL에 연결해 로그인, 접근 차단, BCrypt 자동 전환, 메인·공지·결재 화면을 확인합니다.
+통합 테스트는 Testcontainers가 생성한 격리 MySQL에 연결해 로그인, BCrypt 전환·비밀번호 변경, 관리자 API, 전자결재 작성·승인·반려·수정·첨부파일 권한·롤백을 확인합니다. 개발용 MySQL 데이터는 변경하지 않습니다.
 성능 측정 결과는 `performance/results/`에 저장됩니다.
+
+전자결재 리팩터링 구조, 테스트 범위, 트러블슈팅과 Before/After 수치는 [전자결재 리팩터링 기록](docs/refactoring/approval-refactoring.md)에 정리했습니다.
+권한 강화와 공지사항·사원관리 리팩터링 기록은 [권한·공지·사원관리 리팩터링 기록](docs/refactoring/access-notice-user-refactoring.md)에 정리했습니다.
 
 ---
 

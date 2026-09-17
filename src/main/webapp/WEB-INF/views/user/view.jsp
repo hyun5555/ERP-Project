@@ -78,11 +78,6 @@ pageContext.setAttribute("menu", "user-edit");
 								readonly />
 						</div>
 						<div class="user_form_group user_documentfilters_line">
-							<label class="user_label05">사원PW</label> <input type="password"
-								name="member_pw" class="user_documentNum" value="${user.userpw }"
-								readonly />
-						</div>
-						<div class="user_form_group user_documentfilters_line">
 							<label>입사일자</label> <input type="text" class="user_documentNum"
 								value="${user.joindate }" readonly />
 						</div>

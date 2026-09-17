@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.erp.approval">
+<mapper namespace="com.erp.mapper.ApprovalMapper">
 	<!-- approvalVO에 있는 userVO drafter(기안자) 정보 매핑 -->
     <resultMap id="approvalDetailMap" type="com.erp.vo.approvalVO">
         <!-- approval 테이블 컬럼 매핑 -->
@@ -118,6 +118,26 @@
 		    a.approval_no = #{approval_no}
 	</select>
 
+	<select id="selectApprovalDetailForUser" resultMap="approvalDetailMap">
+		SELECT
+			a.approval_no, a.kind, a.writedate, a.approval_title, a.approval_content,
+			a.document_status, a.usernum, a.approval_code,
+			u.usernum AS drafter_usernum, u.name AS drafter_name,
+			u.team AS drafter_team, u.level AS drafter_level
+		FROM approval a
+		LEFT JOIN user u ON a.usernum = u.usernum
+		WHERE a.approval_no = #{approvalNo}
+		AND (
+			a.usernum = #{usernum}
+			OR a.document_status = '승인'
+			OR EXISTS (
+				SELECT 1 FROM approval_line al
+				WHERE al.approval_no = a.approval_no
+				AND al.approval_target = #{usernum}
+			)
+		)
+	</select>
+
 	<!-- 2.2. 특정 결재 문서의 첨부파일 목록 조회 -->
 	<select id="selectApprovalFiles" parameterType="int" resultType="com.erp.vo.approval_file_VO">
 		SELECT approval_no, apname, afname FROM approval_file WHERE approval_no = #{approval_no}
@@ -146,97 +166,47 @@
 	<!-- 3. 결재 처리 (View에서 승인/반려 시) 관련                        -->
 	<!-- ============================================================== -->
 	<update id="updateApprovalLineStatus" parameterType="com.erp.vo.approval_line_VO">
-		UPDATE approval_line SET approval_status = #{approval_status}, approval_date = #{approval_date}, comment = #{comment}
-		WHERE approval_no = #{approval_no} AND approval_target = #{approval_target}
+		UPDATE approval_line
+		SET approval_status = #{approval_status}, approval_date = CURRENT_TIMESTAMP, comment = #{comment}
+		WHERE approval_no = #{approval_no}
+		AND approval_target = #{approval_target}
+		AND approval_status = '대기'
 	</update>
-	<update id="updateDocumentStatus">
-		UPDATE approval SET document_status = #{document_status} WHERE approval_no = #{approval_no}
-	</update>
-    <select id="getApprovalLineStatuses" parameterType="int" resultType="com.erp.vo.approval_line_VO">
-        SELECT approval_status, approval_sort FROM approval_line WHERE approval_no = #{approval_no} ORDER BY approval_sort ASC
-    </select>
 
 	<update id="updateDocumentStatusAuto" parameterType="int">
-    UPDATE approval
-    SET document_status = 
-        CASE 
-        	WHEN EXISTS (
-                SELECT 1 FROM approval_line
-                WHERE approval_no = #{approval_no}
-                AND approval_status = '반려'
-            ) THEN '반려'
-
-            WHEN (
-                SELECT COUNT(*) FROM approval_line
-                WHERE approval_no = #{approval_no}
-                AND approval_status = '승인'
-            ) = (
-                SELECT COUNT(*) FROM approval_line
-                WHERE approval_no = #{approval_no}
-            ) THEN '승인'
-
-            WHEN EXISTS (
-                SELECT 1 FROM approval_line
-                WHERE approval_no = #{approval_no}
-                AND approval_status IN ('승인', '반려')
-            ) AND (
-                SELECT COUNT(*) FROM approval_line 
-                WHERE approval_no = #{approval_no}
-                AND approval_status IS NULL
-            ) > 0 THEN '진행중'
-
-            WHEN NOT EXISTS (
-                SELECT 1 FROM approval_line
-                WHERE approval_no = #{approval_no}
-                AND approval_status IN ('승인', '반려')
-            ) THEN '대기중'
-
-            ELSE '진행중'
-        END
-    WHERE approval_no = #{approval_no}
+		UPDATE approval a
+		JOIN (
+			SELECT approval_no,
+				CASE
+					WHEN SUM(approval_status = '반려') &gt; 0 THEN '반려'
+					WHEN SUM(approval_status = '승인') = COUNT(*) THEN '승인'
+					WHEN SUM(approval_status = '승인') &gt; 0 THEN '진행중'
+					ELSE '대기중'
+				END AS next_status
+			FROM approval_line
+			WHERE approval_no = #{approvalNo}
+			GROUP BY approval_no
+		) status_summary ON status_summary.approval_no = a.approval_no
+		SET a.document_status = status_summary.next_status
 	</update>
 	
 	<!-- ============================================================== -->
 	<!-- 4. 결재 문서 수정 ('대기중' 상태일 때) 관련                      -->
 	<!-- ============================================================== -->
-	<update id="updateApproval" parameterType="com.erp.vo.approvalVO">
-    <!-- 결재 상태가 대기, 반려일 때만 수정 가능 -->
-	    UPDATE approval
-	    SET kind = #{kind}, approval_title = #{approval_title}, approval_content = #{approval_content}, approval_code = #{approval_code}
-	    WHERE approval_no = #{approval_no} AND (document_status = '대기중' OR document_status = '반려')
+	<update id="updateApproval">
+		UPDATE approval
+		SET kind = #{approval.kind},
+			approval_title = #{approval.approval_title},
+			approval_content = #{approval.approval_content},
+			approval_code = #{approval.approval_code},
+			document_status = '대기중'
+		WHERE approval_no = #{approval.approval_no}
+		AND usernum = #{usernum}
+		AND document_status IN ('대기중', '반려')
 	</update>
 	
-	<update id="updateApprovalStatusToPending" parameterType="int">
-	    <!-- 수정 후 결재 상태를 대기중으로 변경 -->
-	    UPDATE approval
-	    SET document_status = '대기중'
-	    WHERE approval_no = #{approval_no}
-	</update>
-	<!-- 첨부파일  -->
-	<update id="modifyApprovalFiles" parameterType="java.util.List">
-	    <foreach collection="list" item="file" separator=";">
-	    
-	        <if test='file.afname != null and file.afname != ""'>
-	    	UPDATE approval SET    
-	    	    afname = #{file.afname},
-	            apname = #{file.apname}
-	            where approval_no = #{file.approval_no}
-	        </if>
-	        
-	</foreach>
-	</update>
-	<!-- 결재선 추가 -->
-	<insert id="modifyApprovalLines" parameterType="java.util.List">
-		INSERT INTO approval_line (
-		approval_target, approval_status, approval_sort, approval_date, comment
-		) VALUES
-		<foreach collection="list" item="line" separator=",">
-			( #{line.approval_target}, '대기', #{line.approval_sort}, NULL, NULL )
-		</foreach>
-	</insert>
-	
-	<delete id="deleteApproval" parameterType="map">
-		delete from approval where approval_no = #{approval_no}
+	<delete id="deleteApproval">
+		delete from approval where approval_no = #{approvalNo}
 		and document_status = '대기중'
 		and usernum = #{usernum}
 	</delete>

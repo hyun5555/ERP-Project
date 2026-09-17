@@ -44,6 +44,10 @@ public class SecurityConfig {
 			.authorizeHttpRequests(authorize -> authorize
 				.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
 				.requestMatchers("/", "/login/login.do", "/resources/**", "/error").permitAll()
+				.requestMatchers("/user/myinfo.do").authenticated()
+				.requestMatchers("/user/**").hasRole("ADMIN")
+				.requestMatchers("/notice/write.do", "/notice/writeOK.do", "/notice/delete.do")
+					.hasRole("ADMIN")
 				.anyRequest().authenticated())
 			.formLogin(form -> form
 				.loginPage("/login/login.do")

@@ -13,9 +13,9 @@ public class notice_teamVO
 		String name = "";
 		switch(notice_team)
 		{
-		case "100": name = "°³¹ß";     break;
-		case "200": name = "µğÀÚÀÎ";   break;
-		case "300": name = "°æ¿µÁö¿ø";  break;
+		case "100": name = "ê°œë°œ";     break;
+		case "200": name = "ë””ìì¸";   break;
+		case "300": name = "ê²½ì˜ì§€ì›";  break;
 		}
 		return name;
 	}

@@ -29,7 +29,8 @@ pageContext.setAttribute("menu", "user-edit");
 	
 	function confirmDelete(usernum) {
 	    if (confirm("해당 사원을 삭제하시겠습니까?")) {
-	        location.href = '/ERP/user/delete.do?usernum=' + usernum;
+	        document.getElementById('deleteUsernum').value = usernum;
+	        document.getElementById('deleteUserForm').submit();
 	    }
 	}
 	
@@ -156,8 +157,12 @@ pageContext.setAttribute("menu", "user-edit");
 									</table>
 								</div>
 							</div>
-						</form>
-						<div class="list-footer">
+							</form>
+							<form id="deleteUserForm" action="/ERP/user/delete.do" method="post">
+								<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+								<input type="hidden" id="deleteUsernum" name="usernum"/>
+							</form>
+							<div class="list-footer">
 							<div class="pagination-nav">
 								<ul class="pagination">
 									<c:forEach var="i" begin="1" end="${totalPages}">

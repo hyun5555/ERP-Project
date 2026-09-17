@@ -17,47 +17,47 @@ pageContext.setAttribute("menu", "user");
 					<div class="cteam_view_filters">
 						<div class="user_form_group user_documentfilters_line">
 							<label class="user_label01">사원명</label> <input type="text"
-								name="member_name" class="user_documentNum" value="${loginUser.name }"
+								name="member_name" class="user_documentNum" value="${user.name }"
 								readonly />
 						</div>
 						<div class="user_form_group user_documentfilters_line">
 							<label>주민번호</label> <input type="text" name="juminbunho1"
-								class="user_ResiNum" value="${loginUser.idnum1 }" readonly /><span class="sc">-</span>
+								class="user_ResiNum" value="${user.idnum1 }" readonly /><span class="sc">-</span>
 								<input type="text" class="user_ResiNum"
-								value="${loginUser.idnum2 }" readonly />
+								value="${user.idnum2 }" readonly />
 						</div>
 						<div class="user_form_group user_documentfilters_line">
 							<label>전화번호</label> <input type="text" name="tel1"
-								class="user_num" value="${loginUser.phonenum }" readonly style="width: 100px"/>
+								class="user_num" value="${user.phonenum }" readonly style="width: 100px"/>
 						</div>
 						<div class="user_form_group user_documentfilters_line">
 							<label>내선번호</label> <input type="text" name="tel1"
-								class="user_num" value="${loginUser.officenum }" readonly style="width: 100px"/>
+								class="user_num" value="${user.officenum }" readonly style="width: 100px"/>
 						</div>
 						<div class="user_form_group user_documentfilters_line">
 							<label>메일주소</label> <input type="text" name="email1"
-								class="user_documentNum" value="${loginUser.email }" readonly />
+								class="user_documentNum" value="${user.email }" readonly />
 						</div>
 						<div class="user_option_group">
 							<div class="user_form_group user_documentfilters_line">
 								<label class="user_label03">부서</label> <input type="text"
-									class="user_documentNum" value="${loginUser.team }" readonly />
+								class="user_documentNum" value="${user.team }" readonly />
 							</div>
 						</div>
 						<div class="user_option_group">							
 							<div class="user_form_group user_documentfilters_line">
 								<label class="user_label03">직급</label> <input type="text"
-									class="user_documentNum" value="${loginUser.level }" readonly />
+								class="user_documentNum" value="${user.level }" readonly />
 							</div>
 						</div>
 						<div class="user_form_group user_documentfilters_line">
 							<label class="user_label04">사원ID</label> <input type="text"
-								name="member_id" class="user_documentNum" value="${loginUser.usernum }"
+								name="member_id" class="user_documentNum" value="${user.usernum }"
 								readonly />
 						</div>
 						<div class="user_form_group user_documentfilters_line">
 							<label>입사일자</label> <input type="text" class="user_joinDate"
-								value="${loginUser.joindate }" readonly />
+								value="${user.joindate }" readonly />
 						</div>
 					</div>
 				</div>

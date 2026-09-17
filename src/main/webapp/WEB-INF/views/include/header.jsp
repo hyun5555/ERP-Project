@@ -78,7 +78,7 @@ if(menu == null) menu = "";
 								<strong>${ loginUser.name }</strong>
 							</div>
 							<button type="button" class="sidebar-myinfo-btn" 
-							onclick="window.open('/ERP/user/myinfo.do?usernum=${ loginUser.usernum }', 'MyInfo', 'width=900,height=700')">내 정보</button>
+							onclick="window.open('/ERP/user/myinfo.do', 'MyInfo', 'width=900,height=700')">내 정보</button>
 						</div>
 						<div class="user-right">
 							<div class="user-details">
@@ -122,9 +122,11 @@ if(menu == null) menu = "";
 							<li class="sidebar-submenu <%= menu.equals("notice") ? "active" :"" %>"><a href="/ERP/notice/list.do"> <i
 									class="fa-solid fa-bullhorn"></i> <span>공지사항</span></a></li>
 							<div class="menu-bar"></div>
+						<c:if test="${loginUser.authority}">
 							<li class="sidebar-submenu <%= menu.equals("user-edit") ? "active" :"" %>"><a href="/ERP/user/list.do"> <i
 									class="fa-solid fa-users-line"></i> <span>사원관리</span></a>
 							</li>
+						</c:if>
 						</ul>
 					</div>
 				</div>

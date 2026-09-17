@@ -2,14 +2,14 @@ package com.erp.vo;
 
 public class searchVO 
 {
-	private int    pageno;      //ÆäÀÌÁö ¹øÈ£
-	private int    offset;		//½ÃÀÛÀ§Ä¡
-	private String notice_team; //ºÎ¼­¸í
-	private String searchKey;   //°Ë»ö(Á¦¸ñ,³»¿ë, name, usernum)
-	private String searchWord;	//°Ë»ö¾î
-	private String team;		//ºÎ¼­¸í
-	private String level;       //Á÷±Ş
-	private String user_status; //»óÅÂ
+	private int    pageno;      //í˜ì´ì§€ ë²ˆí˜¸
+	private int    offset;		//ì‹œì‘ìœ„ì¹˜
+	private String notice_team; //ë¶€ì„œëª…
+	private String searchKey;   //ê²€ìƒ‰(ì œëª©,ë‚´ìš©, name, usernum)
+	private String searchWord;	//ê²€ìƒ‰ì–´
+	private String team;		//ë¶€ì„œëª…
+	private String level;       //ì§ê¸‰
+	private String user_status; //ìƒíƒœ
 	
 
 	public int    getPageno()      { return pageno;     } 

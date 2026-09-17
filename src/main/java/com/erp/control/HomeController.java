@@ -11,25 +11,25 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.erp.dto.approvalDTO;
-import com.erp.dto.noticeDTO;
+import com.erp.service.ApprovalService;
+import com.erp.service.NoticeService;
 import com.erp.vo.noticeVO;
 import com.erp.vo.userVO;
 
 @Controller
 public class HomeController {
 
-	private final noticeDTO noticeRepository;
-	private final approvalDTO approvalRepository;
+	private final NoticeService noticeService;
+	private final ApprovalService approvalService;
 
-	public HomeController(noticeDTO noticeRepository, approvalDTO approvalRepository) {
-		this.noticeRepository = noticeRepository;
-		this.approvalRepository = approvalRepository;
+	public HomeController(NoticeService noticeService, ApprovalService approvalService) {
+		this.noticeService = noticeService;
+		this.approvalService = approvalService;
 	}
 
 	@GetMapping("/main.do")
 	public String main(Model model) {
-		List<noticeVO> notices = noticeRepository.mainList();
+		List<noticeVO> notices = noticeService.getMainNotices();
 		model.addAttribute("list", notices);
 		return "main";
 	}
@@ -48,9 +48,9 @@ public class HomeController {
 		StringBuilder counts = new StringBuilder();
 		for (String status : List.of("대기중", "반려", "진행중", "승인")) {
 			params.put("status", status);
-			counts.append(approvalRepository.countAppList(params)).append('/');
+			counts.append(approvalService.countDrafts(params)).append('/');
 		}
 		params.put("status", "");
-		return counts.append(approvalRepository.countRecvApprovalList(params)).toString();
+		return counts.append(approvalService.countReceived(params)).toString();
 	}
 }

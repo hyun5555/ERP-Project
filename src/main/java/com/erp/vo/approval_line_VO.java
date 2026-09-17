@@ -1,20 +1,20 @@
 /*
- * ¸ğµâ¸í : Å×ÀÌºí approval_lineÀÇ µ¥ÀÌÅÍ¸¦ Ç¥ÇöÇÏ±â À§ÇÑ Å¬·¡½º
- * ÀÛ¼ºÀÏ : 2025.04.11
- * ÀÛ¼ºÀÚ : ¼ÕÇö¾Æ
+ * ëª¨ë“ˆëª… : í…Œì´ë¸” approval_lineì˜ ë°ì´í„°ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•œ í´ë˜ìŠ¤
+ * ì‘ì„±ì¼ : 2025.04.11
+ * ì‘ì„±ì : ì†í˜„ì•„
  */
 
 package com.erp.vo;
 
 public class approval_line_VO {
 	
-	private int    approval_no;     //ÀüÀÚ°áÀç ¹øÈ£
-	private String approval_target; //°áÀç´ë»ó : °áÀçÀÚ(usernum)´Â user¿¡¼­ °¡Á®¿Ã°ÅÀÓ.
-	private String approval_status; //°áÀç»óÅÂ
-	private String approval_sort;   //°áÀç¼ø¼­
-	private String approval_date;   //°áÀçÀÏÀÚ
-	private String comment;         //ÄÚ¸àÆ®
-	private userVO approver;        //À¯Àú Á¤º¸ °´Ã¼ : °áÀçÀÚ Á¤º¸
+	private int    approval_no;     //ì „ìê²°ì¬ ë²ˆí˜¸
+	private String approval_target; //ê²°ì¬ëŒ€ìƒ : ê²°ì¬ì(usernum)ëŠ” userì—ì„œ ê°€ì ¸ì˜¬ê±°ì„.
+	private String approval_status; //ê²°ì¬ìƒíƒœ
+	private String approval_sort;   //ê²°ì¬ìˆœì„œ
+	private String approval_date;   //ê²°ì¬ì¼ì
+	private String comment;         //ì½”ë©˜íŠ¸
+	private userVO approver;        //ìœ ì € ì •ë³´ ê°ì²´ : ê²°ì¬ì ì •ë³´
 	
 	public int getApproval_no()        {return approval_no;     }
 	public String getApproval_target() {return approval_target;	}

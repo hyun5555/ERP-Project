@@ -5,16 +5,6 @@ pageContext.setAttribute("menu", "notice");
 %>     
 <%@ include file="../include/header.jsp" %>
 <!-------------------------------------  공지사항 뷰 시작 ----------------------------------------------->
-<script>
-function DoDelete(no)
-{
-	if(confirm("해당 게시물을 삭제하시겠습니까?") != 1)
-	{
-		return;	
-	}
-	document.location = "/ERP/notice/delete.do?notice_no=" + no;
-}
-</script>
 <main class="page-content">
 	<div class="row mb-4">
 		<div class="col-md-12">
@@ -78,7 +68,12 @@ function DoDelete(no)
 				<div class="user-reg-del">
 					<button class="cteam_btn_style" onclick="location.href='/ERP/notice/list.do'">목록</button>
 					<c:if test="${ loginUser != null and loginUser.authority == true }">
-						<button class="cteam_btn_style" id="notice-del" onclick="DoDelete(${ notice.notice_no });">삭제</button>
+						<form action="/ERP/notice/delete.do" method="post" style="display:inline">
+							<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+							<input type="hidden" name="notice_no" value="${notice.notice_no}"/>
+							<button class="cteam_btn_style" id="notice-del" type="submit"
+								onclick="return confirm('해당 게시물을 삭제하시겠습니까?')">삭제</button>
+						</form>
 					</c:if>
 				</div>
 			</div>

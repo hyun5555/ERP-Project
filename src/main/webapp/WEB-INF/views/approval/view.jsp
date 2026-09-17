@@ -146,11 +146,16 @@ if(request.getParameter("menu") != null)
 					</form>
 				</c:if>
 				<div class="cteam_btn_location">
-				    <c:if test="${sessionScope.loginUser.usernum eq item.usernum}">
-				    	<input type="hidden" id="approvalStatus" value="${item.document_status}" />
-				    	<button class="cteam_btn_style" id="modifybtn">수정하기</button>
-				    	<button class="cteam_btn_style" id="deleteApp" onclick="deleteApproval(${item.approval_no})">삭제하기</button>
-				    </c:if>
+					<c:if test="${sessionScope.loginUser.usernum eq item.usernum}">
+						<input type="hidden" id="approvalStatus" value="${item.document_status}" />
+						<button class="cteam_btn_style" id="modifybtn">수정하기</button>
+						<form action="/ERP/approval/delete.do" method="post" style="display:inline">
+							<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+							<input type="hidden" name="approval_no" value="${item.approval_no}"/>
+							<button class="cteam_btn_style" id="deleteApp" type="submit"
+								onclick="return confirm('문서를 삭제하시겠습니까?')">삭제하기</button>
+						</form>
+					</c:if>
 				</div>
 			</div>
 		</div>
@@ -177,17 +182,13 @@ $(document).ready(function()
             window.location.href = '/ERP/approval/modify.do?approval_no=${item.approval_no}&mode=${mode}';
         }
     });
-
-    window.deleteApproval = function(no) 
-    {
-        if (confirm('문서를 삭제하시겠습니까?')) 
-        {
-            location.href = '/ERP/approval/delete.do?approval_no=' + no;
-        }
-    };
 });
     
 function submitApproval(status) {
+	if (status === '반려' && !$('#comment').val().trim()) {
+		alert('반려 의견을 입력해주세요.');
+		return;
+	}
     $('#approval_status').val(status);
     $('#updateComment').submit();
   }

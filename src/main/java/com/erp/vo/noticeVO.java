@@ -2,16 +2,16 @@ package com.erp.vo;
 
 public class noticeVO 
 {
-	private int     notice_no;        //°øÁö»çÇ× ¹øÈ£
-	private String  notice_title;	  //°øÁö»çÇ× Á¦¸ñ
-	private String  notice_content;	  //°øÁö»çÇ× ³»¿ë
-	private boolean is_important;     //Áß¿ä¿©ºÎ
-	private boolean is_main;          //¸ŞÀÎ³ëÃâ¿©ºÎ
-	private String  pname;    		  //Ã·ºÎÆÄÀÏ ¹°¸®¸í
-	private String  fname;			  //Ã·ºÎÆÄÀÏ ³í¸®¸í
-	private String  noticedate;		  //°øÁöÀÏÀÚ
-	private String  usernum;     	  //ÀÛ¼ºÀÚ ID
-	private String  username;     	  //ÀÛ¼ºÀÚ¸í
+	private int     notice_no;        //ê³µì§€ì‚¬í•­ ë²ˆí˜¸
+	private String  notice_title;	  //ê³µì§€ì‚¬í•­ ì œëª©
+	private String  notice_content;	  //ê³µì§€ì‚¬í•­ ë‚´ìš©
+	private boolean is_important;     //ì¤‘ìš”ì—¬ë¶€
+	private boolean is_main;          //ë©”ì¸ë…¸ì¶œì—¬ë¶€
+	private String  pname;    		  //ì²¨ë¶€íŒŒì¼ ë¬¼ë¦¬ëª…
+	private String  fname;			  //ì²¨ë¶€íŒŒì¼ ë…¼ë¦¬ëª…
+	private String  noticedate;		  //ê³µì§€ì¼ì
+	private String  usernum;     	  //ì‘ì„±ì ID
+	private String  username;     	  //ì‘ì„±ìëª…
 	
 	public int getNotice_no() 		  {return notice_no;     }
 	public String getNotice_title()   {return notice_title;  }

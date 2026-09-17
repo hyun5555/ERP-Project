@@ -121,10 +121,12 @@ function DoSearch()
 						</li>
 					</ul>
 				</nav>
-				<div class="notice-reg">
-					<button class="cteam_btn_style" type="button"
-						onclick="location.href='/ERP/notice/write.do'">공지등록</button>
-				</div>
+				<c:if test="${loginUser.authority}">
+					<div class="notice-reg">
+						<button class="cteam_btn_style" type="button"
+							onclick="location.href='/ERP/notice/write.do'">공지등록</button>
+					</div>
+				</c:if>
 			</div>
 		</div>
 	</div>

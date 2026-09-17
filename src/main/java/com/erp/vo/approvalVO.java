@@ -1,21 +1,21 @@
 /*
- * ¸ğµâ¸í : Å×ÀÌºí approvalÀÇ µ¥ÀÌÅÍ¸¦ Ç¥ÇöÇÏ±â À§ÇÑ Å¬·¡½º
- * ÀÛ¼ºÀÏ : 2025.04.11
- * ÀÛ¼ºÀÚ : ¼ÕÇö¾Æ
+ * ëª¨ë“ˆëª… : í…Œì´ë¸” approvalì˜ ë°ì´í„°ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•œ í´ë˜ìŠ¤
+ * ì‘ì„±ì¼ : 2025.04.11
+ * ì‘ì„±ì : ì†í˜„ì•„
  */
 package com.erp.vo;
 
 public class approvalVO {
 	
-	private int    approval_no;      //ÀüÀÚ°áÀç ¹øÈ£
-	private String kind;             //¹®¼­±¸ºĞ
-	private String writedate;        //ÀÛ¼ºÀÏÀÚ
-	private String approval_title;   //ÀüÀÚ°áÀç Á¦¸ñ
-	private String approval_content; //ÀüÀÚ°áÀç ³»¿ë
-	private String document_status;  //¹®¼­°áÀç »óÅÂ
-	private String usernum;          //»ç¿ø¹øÈ£ : ÀÛ¼ºÀÚ(usernum)´Â user¿¡¼­ FOREIGN KEY·Î °¡Á®¿Ã°ÅÀÓ.
-	private String approval_code;    //Ç°ÀÇ¹øÈ£
-	private userVO drafter;			 //À¯Àú Á¤º¸ °´Ã¼ : ÀÛ¼ºÀÚ Á¤º¸
+	private int    approval_no;      //ì „ìê²°ì¬ ë²ˆí˜¸
+	private String kind;             //ë¬¸ì„œêµ¬ë¶„
+	private String writedate;        //ì‘ì„±ì¼ì
+	private String approval_title;   //ì „ìê²°ì¬ ì œëª©
+	private String approval_content; //ì „ìê²°ì¬ ë‚´ìš©
+	private String document_status;  //ë¬¸ì„œê²°ì¬ ìƒíƒœ
+	private String usernum;          //ì‚¬ì›ë²ˆí˜¸ : ì‘ì„±ì(usernum)ëŠ” userì—ì„œ FOREIGN KEYë¡œ ê°€ì ¸ì˜¬ê±°ì„.
+	private String approval_code;    //í’ˆì˜ë²ˆí˜¸
+	private userVO drafter;			 //ìœ ì € ì •ë³´ ê°ì²´ : ì‘ì„±ì ì •ë³´
 	
 	public int getApproval_no()         {return approval_no;        }
 	public String getKind()             {return kind;               }

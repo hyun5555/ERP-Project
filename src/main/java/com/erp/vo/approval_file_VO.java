@@ -1,15 +1,15 @@
 /*
- * ¸ğµâ¸í : Å×ÀÌºí approval_fileÀÇ µ¥ÀÌÅÍ¸¦ Ç¥ÇöÇÏ±â À§ÇÑ Å¬·¡½º
- * ÀÛ¼ºÀÏ : 2025.04.11
- * ÀÛ¼ºÀÚ : ¼ÕÇö¾Æ
+ * ëª¨ë“ˆëª… : í…Œì´ë¸” approval_fileì˜ ë°ì´í„°ë¥¼ í‘œí˜„í•˜ê¸° ìœ„í•œ í´ë˜ìŠ¤
+ * ì‘ì„±ì¼ : 2025.04.11
+ * ì‘ì„±ì : ì†í˜„ì•„
  */
 package com.erp.vo;
 
 public class approval_file_VO {
 	
-	private int approval_no;    //ÀüÀÚ°áÀç ¹øÈ£
-	private String apname;      //Ã·ºÎÆÄÀÏ ¹°¸®¸í
-	private String afname;      //Ã·ºÎÆÄÀÏ ³í¸®¸í
+	private int approval_no;    //ì „ìê²°ì¬ ë²ˆí˜¸
+	private String apname;      //ì²¨ë¶€íŒŒì¼ ë¬¼ë¦¬ëª…
+	private String afname;      //ì²¨ë¶€íŒŒì¼ ë…¼ë¦¬ëª…
 	
 	
 	public int getApproval_no()    {return approval_no; }

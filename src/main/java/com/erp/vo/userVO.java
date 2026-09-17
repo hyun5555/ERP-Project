@@ -2,21 +2,21 @@ package com.erp.vo;
 
 public class userVO 
 {
-	private String  usernum;		//»ç¿ø¹øÈ£
-	private String  userpw;			//»ç¿øºñ¹Ğ¹øÈ£
-	private String  name;			//»ç¿ø¸í
-	private String  idnum1;			//ÁÖ¹Î¹øÈ£¾Õ¹øÈ£
-	private String  idnum2;			//ÁÖ¹Î¹øÈ£µŞ¹øÈ£ ÇÑÀÚ¸®
-	private String  phonenum;		//ÀüÈ­¹øÈ£
-	private String  officenum;		//³»¼±¹øÈ£
-	private String  email;			//ÀÌ¸ŞÀÏ
-	private String  team;			//ºÎ¼­
-	private String  level;			//Á÷±Ş
-	private boolean firstlogin;		//Ã³À½·Î±×ÀÎ true-Ã³À½·Î±×ÀÎ
-	private String  joindate;		//ÀÔ»çÀÏÀÚ
-	private boolean authority;		//±ÇÇÑ  true-°ü¸®ÀÚ
-	private int     level_num;		//Á÷±Ş¹øÈ£
-	private String  user_status;	//±Ù¹«»óÅÂ
+	private String  usernum;		//ì‚¬ì›ë²ˆí˜¸
+	private String  userpw;			//ì‚¬ì›ë¹„ë°€ë²ˆí˜¸
+	private String  name;			//ì‚¬ì›ëª…
+	private String  idnum1;			//ì£¼ë¯¼ë²ˆí˜¸ì•ë²ˆí˜¸
+	private String  idnum2;			//ì£¼ë¯¼ë²ˆí˜¸ë’·ë²ˆí˜¸ í•œìë¦¬
+	private String  phonenum;		//ì „í™”ë²ˆí˜¸
+	private String  officenum;		//ë‚´ì„ ë²ˆí˜¸
+	private String  email;			//ì´ë©”ì¼
+	private String  team;			//ë¶€ì„œ
+	private String  level;			//ì§ê¸‰
+	private boolean firstlogin;		//ì²˜ìŒë¡œê·¸ì¸ true-ì²˜ìŒë¡œê·¸ì¸
+	private String  joindate;		//ì…ì‚¬ì¼ì
+	private boolean authority;		//ê¶Œí•œ  true-ê´€ë¦¬ì
+	private int     level_num;		//ì§ê¸‰ë²ˆí˜¸
+	private String  user_status;	//ê·¼ë¬´ìƒíƒœ
 	
 	public String getUsernum() 	  {return usernum;	 }
 	public String getUserpw()	  {return userpw;	 }

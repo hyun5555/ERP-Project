@@ -78,5 +78,6 @@ measure() {
 measure main /main.do
 measure notice /notice/list.do
 measure approval /approval/list.do
+measure user /user/list.do
 
 echo "결과: $result_file"
