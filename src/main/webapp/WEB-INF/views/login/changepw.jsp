@@ -44,11 +44,7 @@ function DoSubmit(){
 	$.ajax({
 		type: "post",
 		url : "/ERP/login/changepw.do",
-		data :
-		{
-			oldpw : $("#oldpw").val(),
-			newpw : $("#newpw").val()
-		},
+		data : $("#changePasswordForm").serialize(),
 		dataType: "html",
 		success : function(data){
 			// 통신이 성공적으로 이루어졌을때 이 함수를 타게된다.
@@ -84,18 +80,19 @@ function DoSubmit(){
 	<div class="container">
 		<div class="reset-box">
 			<h2>비밀번호 재설정</h2>
-			<form action="/ERP/login/changepw.do" method="post">
+			<form action="/ERP/login/changepw.do" method="post" id="changePasswordForm">
+				<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 				<div class="form-group">
 					<label for="oldpw">기존 비밀번호</label> <input type="password"
-						id="oldpw" name="oldpw" />
+						id="oldpw" name="oldpw" autocomplete="current-password" />
 				</div>
 				<div class="form-group">
 					<label for="newpw">새 비밀번호</label> <input type="password"
-						id="newpw" name="newpw" />
+						id="newpw" name="newpw" autocomplete="new-password" />
 				</div>
 				<div class="form-group">
 					<label for="confirmpw">새 비밀번호 확인</label> <input
-						type="password" id="confirmpw" name="confirmpw" />
+						type="password" id="confirmpw" name="confirmpw" autocomplete="new-password" />
 				</div>
 				<button class="btn" id="btnChange" type="button">submit</button>
 			</form>

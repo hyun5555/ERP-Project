@@ -6,7 +6,7 @@
 		(usernum, userpw, name, idnum1, idnum2, phonenum, 
 		officenum, email, team, level, firstlogin, 
 		authority, level_num, user_status) 
-		values(#{usernum}, md5(#{userpw}), #{name}, #{idnum1}, #{idnum2}, #{phonenum}, #{officenum}, #{email},
+		values(#{usernum}, #{userpw}, #{name}, #{idnum1}, #{idnum2}, #{phonenum}, #{officenum}, #{email},
 		#{team}, #{level}, #{firstlogin}, #{authority}, #{level_num}, #{user_status})
 	</insert>
 	
@@ -88,18 +88,10 @@
 	</select>
 	
 	
-	<select id="login" parameterType="com.erp.vo.userVO" resultType="com.erp.vo.userVO">
-		select usernum, userpw, name, idnum1, idnum2, phonenum, 
-		officenum, email, team, level, firstlogin, 
-		joindate, authority, level_num, user_status
-		from user
-		where usernum = #{usernum} and userpw = md5(#{userpw})
-	</select>
-	
 	<update id="update" parameterType="com.erp.vo.userVO">
 		update user set
 			<if test="userpw != null and userpw != ''">
-			userpw = md5(#{userpw}),
+			userpw = #{userpw},
 			</if>
 			name = #{name},
 			idnum1 = #{idnum1},
@@ -116,13 +108,6 @@
 	
 	<update id="updateFirstLogin" parameterType="java.lang.String">
 		update user set
-		firstlogin = false
-		where usernum = #{usernum}
-	</update>
-	
-	<update id="changePasswordAndFirstLogin" parameterType="com.erp.vo.userVO">
-		update user set 
-		userpw = md5(#{userpw}),
 		firstlogin = false
 		where usernum = #{usernum}
 	</update>

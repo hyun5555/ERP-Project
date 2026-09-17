@@ -7,11 +7,12 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
@@ -33,8 +34,8 @@ public class noticeController
 	@Autowired
 	noticeDTO noticedto;
 	
-	final static String uploadPath = "D:\\workspace_spring\\ERP03\\upload";
-	//final static String uploadPath = "D:\\ohm\\workspace\\spring\\SpringEx07\\upload";
+	@Value("${erp.upload-dir}")
+	private String uploadPath;
 	
 	//공지사항 리스트
 	@RequestMapping(value = "/notice/list.do", method = RequestMethod.GET)
@@ -108,13 +109,10 @@ public class noticeController
 		response.setHeader("Content-Disposition", "attatchment;filename=\"" + encodedFileName + "\"");
 		
 		// 다운로드 시 저장되는 이름은 Response Header의 "Content-Disposition"에 명시
-		OutputStream os = response.getOutputStream();
-		
-		FileInputStream fis = new FileInputStream(file);
-		FileCopyUtils.copy(fis, os);
-		
-		// fis.close();
-		// os.close();
+		try (OutputStream os = response.getOutputStream();
+			 FileInputStream fis = new FileInputStream(file)) {
+			FileCopyUtils.copy(fis, os);
+		}
 	}
 	
 	//공지사항 등록 페이지 이동
@@ -156,7 +154,8 @@ public class noticeController
 	        String savedFileName = uuid.toString();
 
 	        // 서버에 파일 저장
-	        File newFile = new File(uploadPath + "\\" + savedFileName);
+	        File newFile = new File(uploadPath, savedFileName);
+	        newFile.getParentFile().mkdirs();
 	        file.transferTo(newFile);
 
 	        vo.setFname(originalFileName);

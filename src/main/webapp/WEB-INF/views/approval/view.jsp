@@ -128,6 +128,7 @@ if(request.getParameter("menu") != null)
 				</c:forEach>
 				<c:if test="${isApprover}">
 					<form action="updateComment.do" method="post" id="updateComment">
+						<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 						<input type="hidden" name="approval_no" value="${item.approval_no}" />
 						<input type="hidden" name="usernum" value="${sessionScope.loginUser.usernum}" />
 						<input type="hidden" name="approval_status" id="approval_status" />

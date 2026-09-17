@@ -133,6 +133,7 @@ pageContext.setAttribute("menu", "user-edit");
 						</div>
 							<div class="cteam_header_row cteam_button_group"></div>
 							<form id="modifyForm" action="/ERP/user/modify.do" method="post">
+								<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 								<div class="cteam_middle_row">
 									<div class="cteam_view_filters">
 										<div class="user_form_group user_documentfilters_line">

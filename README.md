@@ -16,6 +16,25 @@ EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리 기능을 통�
 본 프로젝트는 실제 기업 전자결재 시스템의 업무 흐름을 이해하고,
 프론트엔드와 백엔드를 모두 구현하며 협업 기반 웹 개발 경험을 쌓기 위해 진행되었습니다.
 
+## 로컬 실행
+
+Java 21과 Docker Desktop을 실행한 뒤 VS Code에서 이 폴더를 열고 `F5`를 누릅니다.
+MySQL 컨테이너가 자동으로 기동되고 `http://localhost:8080/ERP/`가 열립니다.
+
+- 테스트 계정: `admin` / `1234`
+- MySQL: `localhost:3307`, 데이터베이스·사용자·비밀번호 `erp`
+- 종료: VS Code 디버그 중지 후 `Terminal > Run Task > mysql: down`
+
+## 검증
+
+```bash
+./mvnw test
+./scripts/benchmark.sh after-security-login-refactor
+```
+
+통합 테스트는 실제 MySQL에 연결해 로그인, 접근 차단, BCrypt 자동 전환, 메인·공지·결재 화면을 확인합니다.
+성능 측정 결과는 `performance/results/`에 저장됩니다.
+
 ---
 
 ## 📅 프로젝트 기간

@@ -19,7 +19,8 @@ pageContext.setAttribute("menu", "write");
 					<h3>기안서</h3>
 				</div>
 				<div class="cteam_header_row cteam_button_group"></div>
-				<form action ="/ERP/approval/write.do" method="post" enctype="multipart/form-data" id="writeOK"name="writeOk">
+				<form action ="/ERP/approval/write.do" method="post" enctype="multipart/form-data" id="writeOK" name="writeOk">
+					<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 					<div class="cteam_middle_row">
 						<div class="cteam_view_filters">
 							<div class="cteam_form_group cteam_documentfilters_line">

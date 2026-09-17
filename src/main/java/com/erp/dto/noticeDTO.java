@@ -16,9 +16,9 @@ public class noticeDTO
 	
 	private final static String namespace = "com.erp.notice";
 	
-	//C:°øÁö»çÇ×À» µî·ÏÇÑ´Ù.
-	//¸Å°³º¯¼ö : vo - µî·ÏÇÒ °øÁö»çÇ× Á¤º¸
-	//¸®ÅÏ°ª : true - µî·Ï ¼º°ø, false - µî·Ï ½ÇÆĞ	
+	//C:ê³µì§€ì‚¬í•­ì„ ë“±ë¡í•œë‹¤.
+	//ë§¤ê°œë³€ìˆ˜ : vo - ë“±ë¡í•  ê³µì§€ì‚¬í•­ ì •ë³´
+	//ë¦¬í„´ê°’ : true - ë“±ë¡ ì„±ê³µ, false - ë“±ë¡ ì‹¤íŒ¨
 	public boolean noticeInsert(noticeVO vo,String[] notice_team)
 	{
 		session.insert(namespace + ".notice_insert",vo);
@@ -36,9 +36,9 @@ public class noticeDTO
 		return true;
 	}
 	
-	//R:°øÁö»çÇ× ÀüÃ¼ °¹¼ö¸¦ ¾ò´Â´Ù.
-	//¸Å°³º¯¼ö : searchVO -> notice_team -> ¸ñ·Ï Á¤¸® 
-	//¸®ÅÏ°ª : ÀüÃ¼ °øÁö»çÇ× °¹¼ö
+	//R:ê³µì§€ì‚¬í•­ ì „ì²´ ê°¯ìˆ˜ë¥¼ ì–»ëŠ”ë‹¤.
+	//ë§¤ê°œë³€ìˆ˜ : searchVO -> notice_team -> ëª©ë¡ ì •ë¦¬
+	//ë¦¬í„´ê°’ : ì „ì²´ ê³µì§€ì‚¬í•­ ê°¯ìˆ˜
 	public int GetTotal(searchVO vo)
 	{
 		int total = session.selectOne(namespace + ".total",vo);
@@ -46,23 +46,23 @@ public class noticeDTO
 		return total;
 	}
 	
-	//R:°øÁö»çÇ× ¸ñ·ÏÀ» Á¶È¸ÇÑ´Ù.
-	//¸Å°³º¯¼ö : searchVO
-	//¸®ÅÏ°ª : °øÁö»çÇ× ¸ñ·Ï List
+	//R:ê³µì§€ì‚¬í•­ ëª©ë¡ì„ ì¡°íšŒí•œë‹¤.
+	//ë§¤ê°œë³€ìˆ˜ : searchVO
+	//ë¦¬í„´ê°’ : ê³µì§€ì‚¬í•­ ëª©ë¡ List
 	public List<noticeVO> noticeList(searchVO vo)
 	{
 		List<noticeVO> list = session.selectList(namespace + ".notice_list",vo);
 		return list;
 	}
 	
-	// ºÎ¼­ ¸®½ºÆ® (ÅÇ ¸Ş´º¿ë)
+	// ë¶€ì„œ ë¦¬ìŠ¤íŠ¸ (íƒ­ ë©”ë‰´ìš©)
 	public List<notice_teamVO> noticeTeamList() {
 	    return session.selectList(namespace + ".notice_team_list");
 	}
 	
-	//R:°øÁö»çÇ× Á¤º¸¸¦ Á¶È¸ÇÑ´Ù.
-	//¸Å°³º¯¼ö : notice_no - Á¶È¸ÇÒ °øÁö»çÇ× ¹øÈ£ 
-	//¸®ÅÏ°ª : noticeVO - °øÁö»çÇ× Á¤º¸
+	//R:ê³µì§€ì‚¬í•­ ì •ë³´ë¥¼ ì¡°íšŒí•œë‹¤.
+	//ë§¤ê°œë³€ìˆ˜ : notice_no - ì¡°íšŒí•  ê³µì§€ì‚¬í•­ ë²ˆí˜¸
+	//ë¦¬í„´ê°’ : noticeVO - ê³µì§€ì‚¬í•­ ì •ë³´
 	public noticeVO getNoticeInfo(int notice_no)
 	{
 		noticeVO vo = session.selectOne(namespace + ".notice_view",notice_no);
@@ -70,9 +70,9 @@ public class noticeDTO
 		return vo;
 	}
 	
-	//R:°øÁö»çÇ×ÀÇ ÆÀÁ¤º¸¸¦ Á¤º¸¸¦ Á¶È¸ÇÑ´Ù.
-	//¸Å°³º¯¼ö : notice_no - Á¶È¸ÇÒ °øÁö»çÇ× ¹øÈ£ 
-	//¸®ÅÏ°ª : notice_teamVO - °øÁö»çÇ× ºÎ¼­ ¸ñ·Ï Á¤º¸
+	//R:ê³µì§€ì‚¬í•­ì˜ íŒ€ì •ë³´ë¥¼ ì •ë³´ë¥¼ ì¡°íšŒí•œë‹¤.
+	//ë§¤ê°œë³€ìˆ˜ : notice_no - ì¡°íšŒí•  ê³µì§€ì‚¬í•­ ë²ˆí˜¸
+	//ë¦¬í„´ê°’ : notice_teamVO - ê³µì§€ì‚¬í•­ ë¶€ì„œ ëª©ë¡ ì •ë³´
 	public List<notice_teamVO> getNoticeTeam(int notice_no)
 	{
 		 List<notice_teamVO> list = session.selectList(namespace + ".notice_team",notice_no);
@@ -80,18 +80,18 @@ public class noticeDTO
 		return list;
 	}	
 	
-	//R:¸ŞÀÎÈ­¸é¿¡ °øÁö»çÇ× ¸ñ·ÏÀ» Á¶È¸ÇÑ´Ù.
-	//¸Å°³º¯¼ö : 
-	//¸®ÅÏ°ª : °øÁö»çÇ× ¸ñ·Ï List
+	//R:ë©”ì¸í™”ë©´ì— ê³µì§€ì‚¬í•­ ëª©ë¡ì„ ì¡°íšŒí•œë‹¤.
+	//ë§¤ê°œë³€ìˆ˜ :
+	//ë¦¬í„´ê°’ : ê³µì§€ì‚¬í•­ ëª©ë¡ List
 	public List<noticeVO> mainList()
 	{
 		List<noticeVO> list = session.selectList(namespace + ".main_List");
 		return list;
 	}
 	
-	//D:°øÁö»çÇ× Á¤º¸¸¦ »èÁ¦ÇÑ´Ù.
-	//¸Å°³º¯¼ö : notice_no - »èÁ¦ ÇÒ °øÁö»çÇ× ¹øÈ£
-	//¸®ÅÏ°ª : true - »èÁ¦ ¼º°ø, false - »èÁ¦ ½ÇÆĞ	
+	//D:ê³µì§€ì‚¬í•­ ì •ë³´ë¥¼ ì‚­ì œí•œë‹¤.
+	//ë§¤ê°œë³€ìˆ˜ : notice_no - ì‚­ì œ í•  ê³µì§€ì‚¬í•­ ë²ˆí˜¸
+	//ë¦¬í„´ê°’ : true - ì‚­ì œ ì„±ê³µ, false - ì‚­ì œ ì‹¤íŒ¨
 	public boolean noticeDelete(int notice_no) 
 	{
 		noticeVO vo = new noticeVO();

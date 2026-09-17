@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot: ERP",
+      "request": "launch",
+      "mainClass": "com.erp.ErpApplication",
+      "preLaunchTask": "mysql: up",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Tomcat started on port ([0-9]+)",
+        "uriFormat": "http://localhost:%s/ERP/"
+      }
+    }
+  ]
+}

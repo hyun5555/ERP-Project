@@ -1,17 +1,22 @@
 package com.erp.dto;
 
 import org.apache.ibatis.session.SqlSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.List;
 import com.erp.vo.*;
 
 @Repository
 public class userDTO {
 	
-	@Autowired
-	private SqlSession session;
+	private final SqlSession session;
+	private final PasswordEncoder passwordEncoder;
+
+	public userDTO(SqlSession session, PasswordEncoder passwordEncoder) {
+		this.session = session;
+		this.passwordEncoder = passwordEncoder;
+	}
 	
 	private final static String namespace = "com.erp.user";
 	
@@ -24,7 +29,7 @@ public class userDTO {
 	        return false;
 	    }
 
-	    // 관리자일 경우 insert 수행
+	    vo.setUserpw(passwordEncoder.encode(vo.getUserpw()));
 	    session.insert(namespace + ".insert", vo);
 	    return true;
 	}
@@ -73,30 +78,13 @@ public class userDTO {
 		return false;
 	}
 	
-	//기능 : 로그인 처리 기능 // 처음 로그인 했으면 firstlogin true
-	//매개변수 : usernum - 사원번호, userpw - 비밀번호 
-	//리턴값 : null - 로그인 실패, 객체 - 로그인 정보 객체
-	public userVO login(String usernum, String userpw)
-	{
-		userVO vo = new userVO();
-		vo.setUsernum(usernum);
-		vo.setUserpw(userpw);
-		
-		userVO result = session.selectOne(namespace + ".login", vo);
-		/*
-		if(result != null && result.isFirstlogin()) {
-			
-		    // 최초 로그인 사용자일 경우, firstlogin을 false로 업데이트
-		   session.update(namespace + ".updateFirstLogin", result.getUsernum());
-		}
-		*/
-		return result;
-	}
-	
 	//U: 사원 정보를 변경한다.
 	//매개변수 : vo - 변경 할 사원 정보
 	//리턴값 : true - 변경 성공, false - 변경 실패	
 	public boolean updateUserInfo(userVO vo) {
+		if (vo.getUserpw() != null && !vo.getUserpw().isBlank()) {
+			vo.setUserpw(passwordEncoder.encode(vo.getUserpw()));
+		}
 		session.update(namespace + ".update", vo); 
 		return true;
 	}
@@ -114,24 +102,6 @@ public class userDTO {
 	}
 
 	
-	// 기능: 비밀번호 변경 후 firstlogin을 false로 바꾼다
-	// 매개변수: usernum, 새 비밀번호
-	// 리턴값: true - 성공, false - 실패
-	public boolean changePassword(String usernum, String newPassword) {
-		userVO vo = new userVO();
-		vo.setUsernum(usernum);
-		vo.setUserpw(newPassword);
-
-		int result = session.update(namespace + ".changePasswordAndFirstLogin", vo);
-		/*
-		if(vo != null && vo.isFirstlogin()) {
-		    // 최초 로그인 사용자일 경우, firstlogin을 false로 업데이트
-		   session.update(namespace + ".updateFirstLogin", vo.getUsernum());
-		}	
-		*/	
-		return result > 0;
-	}
-
 	//사원번호가 있는지 검사한다.
 	public int FindUsernum(String usernum)
 	{

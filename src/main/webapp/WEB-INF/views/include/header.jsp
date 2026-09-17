@@ -85,7 +85,10 @@ if(menu == null) menu = "";
 								<div class="user-team">ezen소프트웨어</div>
 								<div class="emp-num">${ loginUser.team }</div>
 								<div class="emp-num">${ loginUser.usernum }</div>
-								<button type="button" class="sidebar-logout-btn" onclick="location.href='/ERP/login/login.do'">로그아웃</button>
+								<form action="/ERP/login/logout.do" method="post">
+									<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+									<button type="submit" class="sidebar-logout-btn">로그아웃</button>
+								</form>
 							</div>
 						</div>
 					</div>
@@ -133,4 +136,3 @@ if(menu == null) menu = "";
 				</div>
 			</nav>
 			<!----------------------------------------------------사이드바 끝남 --------------------------------------------------------------------->
-			

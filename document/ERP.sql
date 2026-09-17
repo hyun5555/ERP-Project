@@ -1,121 +1,133 @@
-drop database erp;
-create database erp;
-use erp;
--- =======================================유저 테이블================================================
-create table user (
-    usernum VARCHAR(50) PRIMARY KEY, -- 사원번호: YYYYNNN (년도일련번호)
-    userpw VARCHAR(50) NOT NULL,     -- 사원비밀번호
-    name VARCHAR(20) NOT NULL,       -- 사원명
-    idnum1 VARCHAR(50),  			 -- 주민번호앞번호
-    idnum2 VARCHAR(1),  			 -- 주민번호뒷번호 한자리
-    phonenum VARCHAR(20),  			 -- 전화번호 
-    officenum VARCHAR(20),  		 -- 내선번호 
-    email VARCHAR(100),  			 -- 이메일
-    team VARCHAR(50),  				 -- 부서 : 100:개발, 200:디자인, 300:경영지원
-    level VARCHAR(50), 				 -- 직급 : 100:사장, 200:팀장, 300:대리, 400:사원
-    firstlogin BOOLEAN, 			 -- 처음로그인 :true:처음 로그인, false:기존 로그인했었음
-    joindate DATETIME default now(), -- 입사일자
-    authority BOOLEAN, 				 -- 권한 : true:있음(관리자) , false:없음(사원)
-    level_num INT, 					 -- 직급번호 : 사장:100, 팀장:200, 대리:300, 사원:400
-    user_status VARCHAR(50) 		 -- 근무상태 : 1:재직, 2:퇴직, 3:휴직
-);
--- =======================================공지사항 테이블================================================
-create table notice	
-(
-    notice_no INT NOT NULL PRIMARY KEY AUTO_INCREMENT, 	-- 공지사항 번호 
-    notice_title VARCHAR(255) NOT NULL, 				-- 공지사항 제목 
-    notice_content TEXT NOT NULL, 						-- 공지사항 내용 
-    is_important BOOLEAN DEFAULT FALSE, 				-- 중요여부 : true:중요표시 됨 , false:중요표시 안됨(기본설정)
-    is_main BOOLEAN DEFAULT FALSE, 						-- 메인노출여부 : true:메인노출 됨 , false:메인노출 안됨(기본설정) 
-    pname VARCHAR(255), 								-- 첨부파일 물리명 
-    fname VARCHAR(255), 								-- 첨부파일 논리명 
-    noticedate DATETIME default now(),			 		-- 공지일자
-    usernum VARCHAR(50),							    -- 작성자 
-    FOREIGN KEY (usernum) REFERENCES user(usernum)
-);
+SET NAMES utf8mb4;
+CREATE DATABASE IF NOT EXISTS erp CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE erp;
 
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS approval_line;
+DROP TABLE IF EXISTS approval_file;
+DROP TABLE IF EXISTS approval;
+DROP TABLE IF EXISTS notice_team;
+DROP TABLE IF EXISTS notice;
+DROP TABLE IF EXISTS user;
+SET FOREIGN_KEY_CHECKS = 1;
 
--- =======================================공지사항 팀 분류 테이블================================================
-create table notice_team
-(	
-	notice_no INT NOT NULL, 					        -- 공지번호
-	notice_team VARCHAR(50), 					        -- 공지 대상 부서 : 전체:999, 100:개발, 200:디자인, 300:경영지원 
-    FOREIGN KEY (notice_no) REFERENCES notice(notice_no) ON DELETE CASCADE
-);
--- =======================================전자결재 테이블================================================
-drop table approval_line;
-drop table approval_file;
-drop table approval;
+CREATE TABLE user (
+    usernum VARCHAR(50) PRIMARY KEY,
+    userpw VARCHAR(255) NOT NULL,
+    name VARCHAR(20) NOT NULL,
+    idnum1 VARCHAR(50),
+    idnum2 VARCHAR(1),
+    phonenum VARCHAR(20),
+    officenum VARCHAR(20),
+    email VARCHAR(100),
+    team VARCHAR(50),
+    level VARCHAR(50),
+    firstlogin BOOLEAN NOT NULL DEFAULT TRUE,
+    joindate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    authority BOOLEAN NOT NULL DEFAULT FALSE,
+    level_num INT,
+    user_status VARCHAR(50) NOT NULL DEFAULT '재직'
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE notice (
+    notice_no INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    notice_title VARCHAR(255) NOT NULL,
+    notice_content TEXT NOT NULL,
+    is_important BOOLEAN NOT NULL DEFAULT FALSE,
+    is_main BOOLEAN NOT NULL DEFAULT FALSE,
+    pname VARCHAR(255),
+    fname VARCHAR(255),
+    noticedate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    usernum VARCHAR(50),
+    CONSTRAINT fk_notice_user FOREIGN KEY (usernum) REFERENCES user(usernum)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE notice_team (
+    notice_no INT NOT NULL,
+    notice_team VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_notice_team_notice FOREIGN KEY (notice_no)
+        REFERENCES notice(notice_no) ON DELETE CASCADE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 CREATE TABLE approval (
-    approval_no INT PRIMARY KEY AUTO_INCREMENT,  -- 전자결재 번호
-    kind VARCHAR(50), 							 -- 문서구분 : 1:연차신청서, 2:품의서, 3:기안서
-    writedate DATETIME default now(),			 -- 작성일자
-    approval_title VARCHAR(255), 				 -- 전자결재 제목
-    approval_content TEXT,						 -- 전자결재 내용
-    document_status VARCHAR(255), 			     -- 문서결재 상태 : 1:대기중(승인없음), 2:반려, 3:진행중(부분승인), 4:승인(전결) 문자열로 수정
-    usernum VARCHAR(50), 						 -- 사원번호 : 작성자(usernum)는 user에서 FOREIGN KEY로 가져올거임.
-    approval_code VARCHAR(255), 							 -- 품의번호 :YYYYNNN (연월일-일련번호)
-    FOREIGN KEY (usernum) REFERENCES user(usernum) ON DELETE CASCADE
-);
--- =======================================결재 파일 테이블================================================
+    approval_no INT PRIMARY KEY AUTO_INCREMENT,
+    kind VARCHAR(50),
+    writedate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    approval_title VARCHAR(255),
+    approval_content TEXT,
+    document_status VARCHAR(255),
+    usernum VARCHAR(50),
+    approval_code VARCHAR(255),
+    CONSTRAINT fk_approval_user FOREIGN KEY (usernum)
+        REFERENCES user(usernum) ON DELETE CASCADE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 CREATE TABLE approval_file (
-    approval_no INT,   							-- 전자결재 번호
-    apname VARCHAR(255), 						-- 첨부파일 물리명
-    afname VARCHAR(255), 						-- 첨부파일 논리명
+    approval_no INT NOT NULL,
+    apname VARCHAR(255) NOT NULL,
+    afname VARCHAR(255),
     PRIMARY KEY (approval_no, apname),
-    FOREIGN KEY (approval_no) REFERENCES approval(approval_no) ON DELETE CASCADE
-);
--- =======================================결재선 테이블================================================
+    CONSTRAINT fk_approval_file_approval FOREIGN KEY (approval_no)
+        REFERENCES approval(approval_no) ON DELETE CASCADE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 CREATE TABLE approval_line (
-    approval_no INT, 							-- 전자결재 번호
-    approval_target VARCHAR(20),				-- 결재대상 : 결재자(usernum)는 user에서 FOREIGN KEY로 가져올거임.
-    approval_status VARCHAR(255),		        -- 결재상태 : 1:결재대기 , 2:반려, 3:승인 문자열로 수정
-    approval_sort INT, 							-- 결재순서
-    approval_date DATETIME default now(),		-- 결재일자
-    comment VARCHAR(50), 						-- 코멘트
+    approval_no INT NOT NULL,
+    approval_target VARCHAR(50) NOT NULL,
+    approval_status VARCHAR(255),
+    approval_sort INT,
+    approval_date DATETIME,
+    comment VARCHAR(255),
     PRIMARY KEY (approval_no, approval_target),
-    FOREIGN KEY (approval_target) REFERENCES user(usernum) ON DELETE CASCADE,
-    FOREIGN KEY (approval_no) REFERENCES approval(approval_no) ON DELETE CASCADE
-);
--- =======================================최초 관리자 등록================================================
-insert into user(usernum, userpw, name, idnum1, idnum2, phonenum, officenum, email, team, level, firstlogin, authority, level_num, user_status)
-values ('admin', md5('1234'),'관리자', '123456', '1', '0101231234', '0811231234', 'ezen', '1', '1', true, true, '1', '1');
+    CONSTRAINT fk_approval_line_user FOREIGN KEY (approval_target)
+        REFERENCES user(usernum) ON DELETE CASCADE,
+    CONSTRAINT fk_approval_line_approval FOREIGN KEY (approval_no)
+        REFERENCES approval(approval_no) ON DELETE CASCADE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+INSERT INTO user
+    (usernum, userpw, name, idnum1, idnum2, phonenum, officenum, email,
+     team, level, firstlogin, authority, level_num, user_status)
+VALUES
+	-- Legacy MD5 fixtures are upgraded to BCrypt after the first successful login.
+    ('admin', MD5('1234'), '관리자', '123456', '1', '010-0000-0000', '02-0000-0000',
+     'admin@example.com', '경영지원', '관리자', FALSE, TRUE, 0, '재직'),
+    ('2005001', MD5('1234'), '김사장', NULL, NULL, NULL, NULL, NULL,
+     '임원', '사장', FALSE, FALSE, 100, '재직'),
+    ('2005002', MD5('1234'), '김팀장', NULL, NULL, NULL, NULL, NULL,
+     '개발', '팀장', FALSE, FALSE, 200, '재직'),
+    ('2005003', MD5('1234'), '김대리', NULL, NULL, NULL, NULL, NULL,
+     '개발', '대리', FALSE, FALSE, 300, '재직'),
+    ('2005004', MD5('1234'), '김사원', NULL, NULL, NULL, NULL, NULL,
+     '개발', '사원', FALSE, FALSE, 400, '재직'),
+    ('2005005', MD5('1234'), '박팀장', NULL, NULL, NULL, NULL, NULL,
+     '디자인', '팀장', FALSE, FALSE, 200, '재직'),
+    ('2005006', MD5('1234'), '박대리', NULL, NULL, NULL, NULL, NULL,
+     '디자인', '대리', FALSE, FALSE, 300, '재직'),
+    ('2005007', MD5('1234'), '박사원', NULL, NULL, NULL, NULL, NULL,
+     '디자인', '사원', FALSE, FALSE, 400, '재직'),
+    ('2005008', MD5('1234'), '오팀장', NULL, NULL, NULL, NULL, NULL,
+     '경영지원', '팀장', FALSE, FALSE, 200, '재직'),
+    ('2005009', MD5('1234'), '오대리', NULL, NULL, NULL, NULL, NULL,
+     '경영지원', '대리', FALSE, FALSE, 300, '재직'),
+    ('2005010', MD5('1234'), '오사원', NULL, NULL, NULL, NULL, NULL,
+     '경영지원', '사원', FALSE, FALSE, 400, '재직');
 
+INSERT INTO notice
+    (notice_title, notice_content, is_important, is_main, usernum)
+VALUES
+    ('ERP 개발 환경 안내', 'Spring Boot 전환 개발 환경이 준비되었습니다.', TRUE, TRUE, 'admin');
 
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005001', md5('1234'),'김사장', null, '100');
+INSERT INTO notice_team (notice_no, notice_team)
+VALUES (LAST_INSERT_ID(), '999');
 
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005002', md5('1234'),'김팀장', '개발', '200');
+INSERT INTO approval
+    (kind, approval_title, approval_content, document_status, usernum, approval_code)
+VALUES
+    ('기안서', 'Spring Boot 전환 검토', '기존 ERP 시스템의 Spring Boot 전환을 검토합니다.',
+     '대기중', '2005004', '20260917-001');
 
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005003', md5('1234'),'김대리', '개발', '300');
-
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005004', md5('1234'),'김사원', '개발', '400');
-
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005005', md5('1234'),'박팀장', '디자인', '200');
-
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005006', md5('1234'),'박대리', '디자인', '300');
-
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005007', md5('1234'),'박사원', '디자인', '400');
-
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005008', md5('1234'),'오팀장', '경영지원', '200');
-
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005008', md5('1234'),'오대리', '경영지원', '300');
-
-insert into user(usernum, userpw, name, team, level_num)
-values ('2005010', md5('1234'),'오사원', '경영지원', '400');
-
-
-update user set  authority = false where authority  is null;
-
-
-
-
+INSERT INTO approval_line
+    (approval_no, approval_target, approval_status, approval_sort)
+VALUES
+    (LAST_INSERT_ID(), '2005002', '대기', 1);

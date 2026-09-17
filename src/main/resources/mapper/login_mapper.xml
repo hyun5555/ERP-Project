@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.erp.mapper.LoginMapper">
+	<select id="findByUsernum" parameterType="java.lang.String" resultType="com.erp.vo.userVO">
+		select usernum, userpw, name, idnum1, idnum2, phonenum,
+		       officenum, email, team, level, firstlogin,
+		       joindate, authority, level_num, user_status
+		from user
+		where usernum = #{usernum}
+	</select>
+
+	<update id="updatePassword">
+		update user set userpw = #{password} where usernum = #{usernum}
+	</update>
+
+	<update id="changePassword">
+		update user
+		set userpw = #{password}, firstlogin = false
+		where usernum = #{usernum}
+	</update>
+</mapper>

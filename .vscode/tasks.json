@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "mysql: up",
+      "type": "shell",
+      "command": "docker compose up -d --wait mysql",
+      "problemMatcher": []
+    },
+    {
+      "label": "mysql: down",
+      "type": "shell",
+      "command": "docker compose down",
+      "problemMatcher": []
+    }
+  ]
+}

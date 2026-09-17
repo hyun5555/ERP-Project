@@ -98,6 +98,7 @@ pageContext.setAttribute("menu", "user-edit");
 							</div>
 						</form>
 						<form id="checkDeleteForm" action="/ERP/user/deleteSelected.do" method="post">
+							<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 							<div class="staff-management">
 								<div class="table-responsive-md">
 									<table class="table table-hover">
@@ -189,4 +190,3 @@ pageContext.setAttribute("menu", "user-edit");
 			<!-------------------------------------------------------- 전체사원 목록 종료 ----------------------------------------------------------------->
 
 <%@ include file="../include/footer.jsp" %>
-

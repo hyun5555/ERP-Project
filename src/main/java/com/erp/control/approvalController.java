@@ -7,11 +7,12 @@ import java.io.OutputStream;
 import java.time.*;
 import java.util.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
@@ -33,7 +34,8 @@ public class approvalController
 	@Autowired
 	private approvalDTO appdto;
 	
-	final static String uploadPath = "D:\\sj\\springws\\ERP03\\upload"; //추후 수정
+	@Value("${erp.upload-dir}")
+	private String uploadPath;
 	
 	//결재리스트 (대기,반려,진행,승인)
 	@RequestMapping(value = "/approval/list.do", method = RequestMethod.GET)
@@ -269,7 +271,7 @@ public class approvalController
 
 	    approval_file_VO fileVO = fileList.get(0); // 첫 번째 파일 사용
 
-	    File file = new File(uploadPath, fileVO.getAfname());
+	    File file = new File(uploadPath, fileVO.getApname());
 
 	    // 파일명 인코딩
 	    String encodedFileName = new String(fileVO.getAfname().getBytes("UTF-8"), "ISO-8859-1");
@@ -349,7 +351,8 @@ public class approvalController
 				UUID uuid = UUID.randomUUID();
 				String savedFileName = uuid.toString();
 				
-				File newFile = new File(uploadPath + savedFileName);
+				File newFile = new File(uploadPath, savedFileName);
+				newFile.getParentFile().mkdirs();
 				
 				file.transferTo(newFile);
 				
@@ -437,7 +440,7 @@ public class approvalController
 		
 		List<approval_file_VO> fileList = null;
 		
-		if(file != null)
+		if(file != null && !file.isEmpty())
 		{			
 			String originalFileName = file.getOriginalFilename();
 			System.out.println("originalFileName:" + originalFileName);
@@ -448,7 +451,8 @@ public class approvalController
 			String savedFileName = uuid.toString();
 			
 			//파일 생성
-			File newFile = new File(uploadPath + savedFileName);
+			File newFile = new File(uploadPath, savedFileName);
+			newFile.getParentFile().mkdirs();
 			
 			//서버로 전송
 			file.transferTo(newFile);

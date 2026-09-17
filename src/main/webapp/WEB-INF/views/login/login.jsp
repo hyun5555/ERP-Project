@@ -41,11 +41,7 @@ function DoSubmit(){
 	$.ajax({
 		type: "post",
 		url : "/ERP/login/login.do",
-		data :
-		{
-			usernum : $("#usernum").val(),
-			userpw : $("#userpw").val()
-		},
+		data : $("form[name='login']").serialize(),
 		dataType: "html",
 		success : function(data){
 			// 통신이 성공적으로 이루어졌을때 이 함수를 타게된다.
@@ -65,8 +61,11 @@ function DoSubmit(){
 				$("#usernum").focus();
 			}
 		},
-		error: function(xhr, status, error){
-			// 통신 오류 발생시	
+		error: function(xhr){
+			if(xhr.status == 401){
+				alert("사원번호 또는 비밀번호가 일치하지 않습니다.");
+				$("#usernum").focus();
+			}
 		},
 		complete : function(){
 			// 통신이 성공하거나 실패했어도 마지막으로 이 함수를 타게된다.
@@ -77,13 +76,14 @@ function DoSubmit(){
 	<div class="container">
 		<div class="login-box">
 			<form action="/ERP/login/login.do" method="post" name="login">
+				<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 				<div class="form-group">
-					<label for="member-id">사원번호</label> <input type="text"
-						id="usernum" name="usernum" value="admin"/>
+					<label for="usernum">사원번호</label> <input type="text"
+						id="usernum" name="usernum" autocomplete="username"/>
 				</div>
 				<div class="form-group">
-					<label for="password">비밀번호</label> <input type="password"
-						id="userpw" name="userpw" value="1234"/>
+					<label for="userpw">비밀번호</label> <input type="password"
+						id="userpw" name="userpw" autocomplete="current-password"/>
 				</div>
 				<button class="btn" id="btnLogin" type="button">Login</button>
 			</form>

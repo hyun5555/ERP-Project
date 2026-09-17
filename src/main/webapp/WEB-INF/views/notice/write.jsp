@@ -68,6 +68,7 @@ function DoInsert()
 			</div>
 			<hr>
 			<form id="write" name="write" action="writeOK.do" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 				<div class="notice-form">
 					<div class="notice-row">
 						<label class="notice-label required">제목</label> 

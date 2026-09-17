@@ -1,0 +1,26 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: erp-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: erp
+      MYSQL_USER: erp
+      MYSQL_PASSWORD: erp
+      TZ: Asia/Seoul
+    ports:
+      - "3307:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - erp-mysql-data:/var/lib/mysql
+      - ./document/ERP.sql:/docker-entrypoint-initdb.d/01-erp.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uerp -perp --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  erp-mysql-data:
