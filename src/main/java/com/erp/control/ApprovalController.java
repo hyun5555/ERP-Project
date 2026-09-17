@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.erp.service.ApprovalService;
-import com.erp.util.WebUtil;
 import com.erp.vo.approvalVO;
 import com.erp.vo.approval_file_VO;
 import com.erp.vo.userVO;
@@ -45,29 +44,8 @@ public class ApprovalController {
 	}
 
 	@GetMapping("/approval/list.do")
-	public String approvalList(
-			@RequestParam(defaultValue = "1") String mode,
-			@RequestParam(defaultValue = "") String kind,
-			@RequestParam(defaultValue = "") String status,
-			@RequestParam(defaultValue = "") String keyword,
-			@RequestParam(defaultValue = "1") int page,
-			HttpSession session, Model model) {
-		userVO loginUser = loginUser(session);
-		status = statusForMode(mode, status);
-		Map<String, Object> params = searchParams(kind, status, keyword, page);
-		params.put("usernum", loginUser.getUsernum());
-
-		int totalCount = approvalService.countDrafts(params);
-		addPagination(model, page, totalCount);
-		model.addAttribute("mode", mode);
-		model.addAttribute("approvalList", approvalService.getDrafts(params));
-		model.addAttribute("kind", kind);
-		model.addAttribute("status", status);
-		model.addAttribute("keyword", keyword);
-		approvalVO filter = new approvalVO();
-		filter.setKind("문서구분");
-		model.addAttribute("app", filter);
-		return "approval/list";
+	public String approvalList() {
+		return "app";
 	}
 
 	@GetMapping("/approval/recv.do")
@@ -91,18 +69,9 @@ public class ApprovalController {
 	}
 
 	@GetMapping("/approval/view.do")
-	public String approvalView(@RequestParam int approval_no,
-			@RequestParam(defaultValue = "") String mode,
-			HttpSession session, Model model) {
-		approvalVO approval = approvalService.getAccessibleApproval(
-				approval_no, loginUser(session).getUsernum());
-		approval.setApproval_content(WebUtil.Text2HTML(approval.getApproval_content()));
-
-		model.addAttribute("appfileList", approvalService.getFiles(approval_no));
-		model.addAttribute("item", approval);
-		model.addAttribute("addedLine", approvalService.getLines(approval_no));
-		model.addAttribute("mode", modeForStatus(approval.getDocument_status(), mode));
-		return "approval/view";
+	public String approvalView(@RequestParam int approval_no, HttpSession session) {
+		approvalService.getAccessibleApproval(approval_no, loginUser(session).getUsernum());
+		return "app";
 	}
 
 	@PostMapping("/approval/delete.do")
@@ -284,23 +253,4 @@ public class ApprovalController {
 		model.addAttribute("totalpage", totalPages);
 	}
 
-	private static String statusForMode(String mode, String fallback) {
-		return switch (mode) {
-			case "1" -> "대기중";
-			case "2" -> "반려";
-			case "3" -> "진행중";
-			case "4" -> "승인";
-			default -> fallback;
-		};
-	}
-
-	private static String modeForStatus(String status, String fallback) {
-		return switch (status) {
-			case "대기중" -> "1";
-			case "반려" -> "2";
-			case "진행중" -> "3";
-			case "승인" -> "4";
-			default -> fallback;
-		};
-	}
 }

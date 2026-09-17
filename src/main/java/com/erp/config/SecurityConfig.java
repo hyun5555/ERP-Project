@@ -43,7 +43,7 @@ public class SecurityConfig {
 			.authenticationProvider(authenticationProvider)
 			.authorizeHttpRequests(authorize -> authorize
 				.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
-				.requestMatchers("/", "/login/login.do", "/resources/**", "/error").permitAll()
+				.requestMatchers("/", "/login/login.do", "/api/session", "/resources/**", "/error").permitAll()
 				.requestMatchers("/user/myinfo.do").authenticated()
 				.requestMatchers("/user/**").hasRole("ADMIN")
 				.requestMatchers("/notice/write.do", "/notice/writeOK.do", "/notice/delete.do")

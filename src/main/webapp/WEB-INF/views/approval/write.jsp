@@ -70,19 +70,18 @@ pageContext.setAttribute("menu", "write");
 							<div id="selectedUsers" class="selected-user-wrapper" style="display: flex; flex-wrap: wrap;">
 								<!-- 결재선 사원이 여기 추가됨 -->
 							</div>
-							<button class="add_approver" data-bs-toggle="modal"
-								data-bs-target="#exampleModal" id="approval-add"
+							<button type="button" class="add_approver" id="approval-add"
+								aria-haspopup="dialog" aria-controls="exampleModal"
 								name="approval-add" type="button">+</button>
 						</div>
 					</div>
-					<div class="modal fade" id="exampleModal" tabindex="-1"
+					<div class="modal" id="exampleModal" tabindex="-1" role="dialog"
 						aria-labelledby="exampleModalLabel" aria-hidden="true">
 						<div class="modal-dialog modal-dialog-scrollable">
 							<div class="modal-content">
 								<div class="modal-header">
 									<h1 class="modal-title fs-5" id="exampleModalLabel">구성원</h1>
-									<button type="button" class="btn-close"
-										data-bs-dismiss="modal" aria-label="Close"></button>
+									<button type="button" class="btn-close" aria-label="닫기"></button>
 								</div>
 								<div class="modal-body">
 									<div class="modal-body member_list_body">

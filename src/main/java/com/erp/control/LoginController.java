@@ -22,7 +22,7 @@ public class LoginController {
 
 	@GetMapping("/")
 	public String login() {
-		return "redirect:/login/login.do";
+		return "app";
 	}
 
 	@GetMapping("/login/login.do")

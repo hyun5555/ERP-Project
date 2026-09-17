@@ -4,24 +4,18 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta name="theme-color" content="#5b5ce2">
+	<meta name="theme-color" content="#8bcff0">
+	<meta name="description" content="전자결재, 공지, 사원관리와 로컬 AI 업무 지원을 한곳에서 제공하는 사내 업무 시스템">
 	<meta name="csrf-parameter" content="${_csrf.parameterName}">
 	<meta name="csrf-header" content="${_csrf.headerName}">
 	<meta name="csrf-token" content="${_csrf.token}">
-	<title>EZEN Works 로그인</title>
+	<title>EZEN Works</title>
 	<script>document.documentElement.dataset.theme = localStorage.getItem('erp-theme') || 'light';</script>
 	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/app/app.css">
 </head>
 <body>
-	<div id="root"><div class="app-loading">로그인 화면을 불러오는 중입니다.</div></div>
-	<noscript>
-		<form action="${pageContext.request.contextPath}/login/login.do" method="post">
-			<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
-			<label>사원번호 <input name="usernum" autocomplete="username"></label>
-			<label>비밀번호 <input type="password" name="userpw" autocomplete="current-password"></label>
-			<button type="submit">로그인</button>
-		</form>
-	</noscript>
+	<div id="root"><div class="app-loading">업무 공간을 불러오는 중입니다.</div></div>
+	<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">
 	<script type="module" src="${pageContext.request.contextPath}/resources/app/app.js"></script>
 </body>
 </html>

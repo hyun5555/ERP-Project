@@ -65,8 +65,8 @@ $(document).ready(function ()
 		// `+` 버튼 앞에 추가
 		$('#approval-add').before($cardElement);
 		
-		// 모달 닫기
-		$('#exampleModal').modal('hide');
+			// 모달 닫기
+			closeMemberModal();
 	});
 
 	function reindexApprovalLines() {
@@ -88,6 +88,15 @@ $(document).ready(function ()
 		reindexApprovalLines();
 	});
 });
+
+function closeMemberModal()
+{
+	const modal = document.getElementById('exampleModal');
+	if (!modal) return;
+	modal.classList.remove('is-open');
+	modal.setAttribute('aria-hidden', 'true');
+	document.body.classList.remove('modal-open');
+}
 
 
 function setFileName(obj)

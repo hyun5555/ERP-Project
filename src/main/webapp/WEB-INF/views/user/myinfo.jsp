@@ -4,7 +4,7 @@
 pageContext.setAttribute("menu", "user");
 %>   
 <link href="/ERP/resources/css/common.css" rel="stylesheet" type="text/css">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous"/>
+<link href="/ERP/resources/css/responsive.css" rel="stylesheet" type="text/css">
 <!-------------------------------------------------------- 내 정보 뷰 시작 ----------------------------------------------------------------->
 <main class="page-content  ps-4">
 	<div class="row mb-4">

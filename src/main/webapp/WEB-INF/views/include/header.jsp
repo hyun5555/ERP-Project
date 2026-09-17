@@ -6,21 +6,17 @@ String menu = (String)pageContext.getAttribute("menu");
 if(menu == null) menu = "";
 %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>EZEN 전자결재</title>
-		<link
-			href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-			rel="stylesheet">
-		<link
-			href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-			rel="stylesheet" crossorigin="anonymous">
 		<link href="https://use.fontawesome.com/releases/v6.7.2/css/all.css"
 			rel="stylesheet">
 		<link href="/ERP/resources/css/sidebar.css" rel="stylesheet" type="text/css">
 		<link rel="stylesheet" href="/ERP/resources/css/common.css">
+		<link rel="stylesheet" href="/ERP/resources/css/responsive.css">
+		<script>document.documentElement.dataset.theme = localStorage.getItem('erp-theme') || 'light';</script>
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	</head>
 	<body>

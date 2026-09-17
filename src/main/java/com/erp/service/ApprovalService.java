@@ -1,6 +1,7 @@
 package com.erp.service;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -149,6 +150,24 @@ public class ApprovalService {
 
 	public int countCompleted(Map<String, Object> params) {
 		return approvalMapper.selectListAllCount(params);
+	}
+
+	public Map<String, Integer> getCounts(String usernum) {
+		Map<String, Object> params = new LinkedHashMap<>();
+		params.put("kind", "");
+		params.put("usernum", usernum);
+		params.put("keyword", "");
+		params.put("offset", 0);
+		params.put("limit", 1);
+
+		Map<String, Integer> counts = new LinkedHashMap<>();
+		for (String status : List.of("대기중", "반려", "진행중", "승인")) {
+			params.put("status", status);
+			counts.put(status, countDrafts(params));
+		}
+		params.put("status", "");
+		counts.put("수신", countReceived(params));
+		return counts;
 	}
 
 	private static List<approval_line_VO> lines(int approvalNo, List<String> approvers) {

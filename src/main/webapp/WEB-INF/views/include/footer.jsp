@@ -27,11 +27,15 @@
 			</main>
 			<!------------------------------------------------------------ footer 끝남---------------------------------------------------------------------->
 		</div>
-		<script
-			src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-		<script
-			src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-			crossorigin="anonymous"></script>
+		<div class="legacy-floating-actions">
+			<button type="button" data-theme-toggle aria-label="다크 모드 전환"><span aria-hidden="true">◐</span></button>
+			<button type="button" class="legacy-chat-button" data-chat-toggle aria-label="AI 챗봇 열기"><span aria-hidden="true">✦</span></button>
+		</div>
+		<aside class="legacy-chat-panel" data-chat-panel aria-label="AI 업무 도우미" hidden>
+			<header><strong>AI 업무 도우미</strong><button type="button" data-chat-close aria-label="닫기">×</button></header>
+			<p>사내 문서 검색과 결재 요약을 지원할 예정입니다.</p>
+			<small>로컬 LLM API 연결 준비 중</small>
+		</aside>
 		<script>
 			jQuery(function($) {
 				$("#close-sidebar").click(function() {
@@ -66,5 +70,6 @@
 				
 			});
 		</script>
+		<script src="/ERP/resources/js/legacy-ui.js"></script>
 	</body>
 </html>

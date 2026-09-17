@@ -93,8 +93,11 @@ class CoreFlowIntegrationTest {
 	@Test
 	@Order(1)
 	void loginPageIsAccessibleWithoutAuthentication() throws Exception {
+		HttpResponse<String> landing = get(client, "/");
 		HttpResponse<String> response = get(client, "/login/login.do");
 
+		assertThat(landing.statusCode()).isEqualTo(200);
+		assertThat(landing.body()).contains("id=\"root\"", "EZEN Works");
 		assertThat(response.statusCode()).isEqualTo(200);
 		assertThat(response.body()).contains("사원번호", "_csrf");
 	}
@@ -388,6 +391,25 @@ class CoreFlowIntegrationTest {
 		assertThat(loginMapper.findByUsernum("2005009").getUserpw()).startsWith("{bcrypt}");
 		assertThat(login(newClient(), "2005009", "1234").statusCode()).isEqualTo(401);
 		assertThat(login(newClient(), "2005009", "Changed-1234!").statusCode()).isEqualTo(200);
+	}
+
+	@Test
+	@Order(17)
+	void reactFrontendApisReturnJsonWithoutSensitiveUserFields() throws Exception {
+		HttpClient admin = authenticatedClient("admin");
+
+		HttpResponse<String> session = get(admin, "/api/session");
+		assertThat(session.statusCode()).isEqualTo(200);
+		assertThat(session.headers().firstValue("content-type").orElse(""))
+				.contains("application/json");
+		assertThat(session.body())
+				.contains("\"authenticated\":true", "\"usernum\":\"admin\"", "\"csrf\"")
+				.doesNotContain("userpw", "idnum1", "idnum2");
+
+		assertThat(get(admin, "/api/dashboard").body())
+				.contains("\"counts\"", "\"notices\"");
+		assertThat(get(admin, "/api/approvals?mode=0").body())
+				.contains("\"items\"", "\"totalCount\"");
 	}
 
 	private int createDraft(String titlePrefix, String drafter, List<String> approvers) {

@@ -1,6 +1,6 @@
 # ERP-Project
 
-### Spring Framework 기반 기업 전자결재 웹 서비스
+### Spring Boot·React 기반 기업 전자결재 웹 서비스
 
 ## 📌 프로젝트 소개
 
@@ -21,6 +21,14 @@ EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리 기능을 통�
 Java 21과 Docker Desktop을 실행한 뒤 VS Code에서 이 폴더를 열고 `F5`를 누릅니다.
 MySQL 컨테이너가 자동으로 기동되고 `http://localhost:8080/ERP/`가 열립니다.
 
+React 소스를 수정한 경우 Spring Boot 실행 전에 프론트엔드를 빌드합니다.
+
+```bash
+cd frontend
+npm ci
+npm run build
+```
+
 - 테스트 계정: `admin` / `1234`
 - MySQL: `localhost:3307`, 데이터베이스·사용자·비밀번호 `erp`
 - 종료: VS Code 디버그 중지 후 `Terminal > Run Task > mysql: down`
@@ -28,15 +36,16 @@ MySQL 컨테이너가 자동으로 기동되고 `http://localhost:8080/ERP/`가 
 ## 검증
 
 ```bash
-./mvnw test
+./mvnw clean test
 ./scripts/benchmark.sh 측정이름
 ```
 
-통합 테스트는 Testcontainers가 생성한 격리 MySQL에 연결해 로그인, BCrypt 전환·비밀번호 변경, 관리자 API, 전자결재 작성·승인·반려·수정·첨부파일 권한·롤백을 확인합니다. 개발용 MySQL 데이터는 변경하지 않습니다.
+17개 통합 테스트는 Testcontainers가 생성한 격리 MySQL에 연결해 로그인, BCrypt 전환·비밀번호 변경, React용 JSON API, 관리자 API, 전자결재 작성·승인·반려·수정·첨부파일 권한·롤백을 확인합니다. 개발용 MySQL 데이터는 변경하지 않습니다.
 성능 측정 결과는 `performance/results/`에 저장됩니다.
 
 전자결재 리팩터링 구조, 테스트 범위, 트러블슈팅과 Before/After 수치는 [전자결재 리팩터링 기록](docs/refactoring/approval-refactoring.md)에 정리했습니다.
 권한 강화와 공지사항·사원관리 리팩터링 기록은 [권한·공지·사원관리 리팩터링 기록](docs/refactoring/access-notice-user-refactoring.md)에 정리했습니다.
+React/Vite 전환 범위와 화면 캡처, 성능·트러블슈팅 기록은 [프론트엔드 React 전환 기록](docs/refactoring/frontend-react-transition.md)에 정리했습니다.
 
 ---
 
@@ -88,18 +97,15 @@ MySQL 컨테이너가 자동으로 기동되고 `http://localhost:8080/ERP/`가 
 ## Backend
 
 * Java
-* Spring Framework
+* Spring Boot 4.1.1
 * MyBatis
-* JSP
-* Servlet
+* Spring Security
 
 ## Frontend
 
-* HTML
-* CSS
-* JavaScript
-* jQuery
-* Bootstrap
+* React 19 / Vite 8
+* 반응형 CSS / 다크모드
+* JSP·jQuery(점진적 전환 대상 화면)
 
 ## Database
 
@@ -107,11 +113,9 @@ MySQL 컨테이너가 자동으로 기동되고 `http://localhost:8080/ERP/`가 
 
 ## Tools
 
-* Eclipse
 * Visual Studio Code
-* SVN
-* Tomcat 9
-* StarUML
+* Git / GitHub Actions
+* Docker / Testcontainers
 
 ---
 
