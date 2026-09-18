@@ -237,11 +237,19 @@ class CoreFlowIntegrationTest {
 		assertThat(get(employee, "/user/view.do?usernum=2005004").statusCode()).isEqualTo(403);
 		assertThat(get(employee, "/user/write.do").statusCode()).isEqualTo(403);
 		assertThat(get(employee, "/user/myinfo.do").statusCode()).isEqualTo(200);
+		assertThat(get(employee, "/api/users").statusCode()).isEqualTo(403);
+		assertThat(get(employee, "/api/users/me").body())
+				.contains("\"usernum\":\"2005007\"")
+				.doesNotContain("userpw");
 
 		HttpResponse<String> detail = get(admin, "/user/view.do?usernum=2005004");
 		assertThat(detail.statusCode()).isEqualTo(200);
 		assertThat(detail.body()).doesNotContain("사원PW", "{bcrypt}");
 		assertThat(get(admin, "/user/list.do").statusCode()).isEqualTo(200);
+		assertThat(get(admin, "/api/users").body()).contains("\"items\"", "\"totalCount\"");
+		assertThat(get(admin, "/api/users/2005004").body())
+				.contains("\"usernum\":\"2005004\"")
+				.doesNotContain("userpw");
 	}
 
 	@Test
@@ -249,55 +257,36 @@ class CoreFlowIntegrationTest {
 	void adminCanCreateModifyAndDeleteEmployee() throws Exception {
 		HttpClient admin = authenticatedClient("admin");
 		String usernum = "T" + UUID.randomUUID().toString().replace("-", "").substring(0, 10);
-		Map<String, String> create = new LinkedHashMap<>();
-		create.put("usernum", usernum);
-		create.put("userpw", "Initial-1234!");
-		create.put("name", "테스트사원");
-		create.put("idnum1", "990101");
-		create.put("idnum2", "1");
-		create.put("phonenum", "010-1111-2222");
-		create.put("officenum", "02-111-2222");
-		create.put("email", "test@example.com");
-		create.put("team", "개발");
-		create.put("level", "사원");
-		create.put("user_status", "재직");
-		create.put("authority", "false");
+		String create = """
+				{"usernum":"%s","userpw":"Initial-1234!","name":"테스트사원",
+				 "idnum1":"990101","idnum2":"1","phonenum":"010-1111-2222",
+				 "officenum":"02-111-2222","email":"test@example.com","team":"개발",
+				 "level":"사원","joindate":"2026-09-18","authority":false,"userStatus":"재직"}
+				""".formatted(usernum);
 
-		assertThat(postForm(admin, "/user/write.do", "/user/write.do", create).statusCode())
-				.isEqualTo(302);
+		assertThat(sendJson(admin, "POST", "/api/users", "/user/write.do", create).statusCode())
+				.isEqualTo(200);
 		Map<String, Object> inserted = jdbcTemplate.queryForMap(
 				"select userpw, firstlogin, level_num from user where usernum = ?", usernum);
 		assertThat(inserted.get("userpw").toString()).startsWith("{bcrypt}");
 		assertThat(inserted.get("firstlogin")).isEqualTo(true);
 		assertThat(inserted.get("level_num")).isEqualTo(400);
 
-		Map<String, String> update = new LinkedHashMap<>();
-		update.put("usernum", usernum);
-		update.put("userpw", "");
-		update.put("name", "수정사원");
-		update.put("idnum1", "990101");
-		update.put("idnum2", "1");
-		update.put("phonenum1", "010");
-		update.put("phonenum2", "3333");
-		update.put("phonenum3", "4444");
-		update.put("officenum1", "02");
-		update.put("officenum2", "333");
-		update.put("officenum3", "4444");
-		update.put("email1", "updated");
-		update.put("email2", "example.com");
-		update.put("team", "개발");
-		update.put("level", "대리");
-		update.put("user_status", "재직");
-		update.put("authority", "false");
+		String update = """
+				{"userpw":"","name":"수정사원","idnum1":"990101","idnum2":"1",
+				 "phonenum":"010-3333-4444","officenum":"02-333-4444",
+				 "email":"updated@example.com","team":"개발","level":"대리",
+				 "joindate":"2026-09-18","authority":false,"userStatus":"재직"}
+				""";
 
-		assertThat(postForm(admin, "/user/modify.do", "/user/modify.do?usernum=" + usernum,
-				update).statusCode()).isEqualTo(302);
+		assertThat(sendJson(admin, "PUT", "/api/users/" + usernum,
+				"/user/modify.do?usernum=" + usernum, update).statusCode()).isEqualTo(200);
 		assertThat(jdbcTemplate.queryForObject(
 				"select concat(name, ':', level_num) from user where usernum = ?", String.class, usernum))
 				.isEqualTo("수정사원:300");
 
-		assertThat(postForm(admin, "/user/delete.do", "/user/view.do?usernum=" + usernum,
-				Map.of("usernum", usernum)).statusCode()).isEqualTo(302);
+		assertThat(sendJson(admin, "DELETE", "/api/users/" + usernum,
+				"/user/view.do?usernum=" + usernum, "{}").statusCode()).isEqualTo(200);
 		assertThat(jdbcTemplate.queryForObject(
 				"select count(*) from user where usernum = ?", Integer.class, usernum)).isZero();
 	}
@@ -383,15 +372,18 @@ class CoreFlowIntegrationTest {
 	void passwordChangeRejectsWrongCurrentPasswordAndUsesBcrypt() throws Exception {
 		HttpClient employee = authenticatedClient("2005009");
 
-		HttpResponse<String> rejected = postForm(employee, "/login/changepw.do",
-				"/login/changepw.do", Map.of("oldpw", "wrong", "newpw", "Changed-1234!"));
-		assertThat(rejected.statusCode()).isEqualTo(200);
-		assertThat(rejected.body()).isEqualTo("ERROR");
+		HttpResponse<String> rejected = sendJson(employee, "POST", "/api/users/me/password",
+				"/login/changepw.do", """
+				{"currentPassword":"wrong","newPassword":"Changed-1234!","confirmPassword":"Changed-1234!"}
+				""");
+		assertThat(rejected.statusCode()).isEqualTo(400);
 
-		HttpResponse<String> changed = postForm(employee, "/login/changepw.do",
-				"/login/changepw.do", Map.of("oldpw", "1234", "newpw", "Changed-1234!"));
+		HttpResponse<String> changed = sendJson(employee, "POST", "/api/users/me/password",
+				"/login/changepw.do", """
+				{"currentPassword":"1234","newPassword":"Changed-1234!","confirmPassword":"Changed-1234!"}
+				""");
 		assertThat(changed.statusCode()).isEqualTo(200);
-		assertThat(changed.body()).isEqualTo("OK");
+		assertThat(changed.body()).contains("비밀번호가 변경되었습니다");
 		assertThat(loginMapper.findByUsernum("2005009").getUserpw()).startsWith("{bcrypt}");
 		assertThat(login(newClient(), "2005009", "1234").statusCode()).isEqualTo(401);
 		assertThat(login(newClient(), "2005009", "Changed-1234!").statusCode()).isEqualTo(200);
@@ -501,6 +493,19 @@ class CoreFlowIntegrationTest {
 		HttpRequest request = HttpRequest.newBuilder(uri(path))
 				.header("Content-Type", "application/x-www-form-urlencoded")
 				.POST(HttpRequest.BodyPublishers.ofString(form.toString()))
+				.build();
+		return http.send(request, HttpResponse.BodyHandlers.ofString());
+	}
+
+	private HttpResponse<String> sendJson(HttpClient http, String method, String path,
+			String csrfPage, String body) throws Exception {
+		Matcher csrf = CSRF_INPUT.matcher(get(http, csrfPage).body());
+		assertThat(csrf.find()).as("CSRF token at " + csrfPage).isTrue();
+		HttpRequest request = HttpRequest.newBuilder(uri(path))
+				.header("Content-Type", "application/json")
+				.header("Accept", "application/json")
+				.header("X-CSRF-TOKEN", csrf.group(2))
+				.method(method, HttpRequest.BodyPublishers.ofString(body))
 				.build();
 		return http.send(request, HttpResponse.BodyHandlers.ofString());
 	}

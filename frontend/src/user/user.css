@@ -1,0 +1,45 @@
+.user-filter { grid-template-columns: 120px 120px 120px 120px minmax(180px, 1fr) auto; }
+.user-list-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.user-list-title .text-button:disabled { cursor: default; opacity: .45; }
+.user-table-wrap { overflow-x: auto; }
+.user-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.user-table th, .user-table td { padding: 14px 12px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.user-table th { color: var(--muted); background: var(--surface-muted); font-size: 10px; }
+.user-table tbody tr { cursor: pointer; transition: background .18s; }
+.user-table tbody tr:hover { background: var(--surface-muted); }
+.user-table input { accent-color: var(--primary); }
+.user-name { display: flex; align-items: center; gap: 10px; }
+.user-name > span:last-child { display: grid; gap: 4px; }
+.user-name small { color: var(--muted); font-size: 9px; }
+.user-status { display: inline-flex; align-items: center; justify-content: center; min-width: 58px; padding: 7px 10px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 10px; font-weight: 800; }
+.user-status.휴직 { background: #fff4dd; color: #b77413; }
+.user-status.퇴직 { background: #ffe8ec; color: #bd465c; }
+.profile-card { overflow: hidden; padding: 30px; }
+.profile-card > header { display: flex; align-items: center; gap: 15px; padding-bottom: 25px; border-bottom: 1px solid var(--line); }
+.profile-card > header > div { min-width: 0; }
+.profile-card h2 { margin: 0 0 5px; font-size: 22px; }
+.profile-card header p { margin: 0; color: var(--muted); font-size: 12px; }
+.profile-card header > span:last-child { margin-left: auto; padding: 7px 11px; border-radius: 999px; background: var(--surface-muted); color: var(--muted); font-size: 10px; font-weight: 700; }
+.profile-avatar { width: 60px; height: 60px; border-radius: 19px; font-size: 15px; }
+.profile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; overflow: hidden; margin: 25px 0 0; border: 1px solid var(--line); border-radius: 15px; background: var(--line); }
+.profile-grid > div { display: grid; gap: 8px; padding: 19px; background: var(--surface-muted); }
+.profile-grid dt { color: var(--muted); font-size: 10px; font-weight: 700; }
+.profile-grid dd { margin: 0; font-size: 13px; font-weight: 700; }
+.authority-picker { display: flex; flex-wrap: wrap; gap: 18px; margin: 0; padding: 17px; border: 1px solid var(--line); border-radius: 14px; }
+.authority-picker legend { padding: 0 7px; }
+.authority-picker label { display: inline-flex; align-items: center; gap: 7px; }
+.authority-picker input { accent-color: var(--primary); }
+.password-form { width: min(620px, 100%); }
+.success-alert { margin-bottom: 18px; padding: 13px 16px; border: 1px solid color-mix(in srgb, var(--success) 28%, var(--line)); border-radius: 12px; background: color-mix(in srgb, var(--success) 7%, var(--surface)); color: var(--success); font-size: 13px; }
+
+@media (max-width: 1000px) {
+  .user-filter { grid-template-columns: repeat(2, 1fr); }
+  .user-filter .search-field, .user-filter > button { grid-column: auto; }
+}
+
+@media (max-width: 760px) {
+  .user-filter { grid-template-columns: 1fr 1fr; }
+  .user-filter .search-field, .user-filter > button { grid-column: 1 / -1; }
+  .profile-card { padding: 20px 16px; }
+  .profile-grid { grid-template-columns: 1fr; }
+}

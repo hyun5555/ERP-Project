@@ -4,11 +4,12 @@
 	<insert id="insertUser" parameterType="com.erp.vo.userVO">
 		INSERT INTO user (
 			usernum, userpw, name, idnum1, idnum2, phonenum,
-			officenum, email, team, level, firstlogin,
+			officenum, email, team, level, firstlogin, joindate,
 			authority, level_num, user_status
 		) VALUES (
 			#{usernum}, #{userpw}, #{name}, #{idnum1}, #{idnum2}, #{phonenum},
 			#{officenum}, #{email}, #{team}, #{level}, #{firstlogin},
+			COALESCE(NULLIF(#{joindate}, ''), CURRENT_TIMESTAMP),
 			#{authority}, #{level_num}, #{user_status}
 		)
 	</insert>
@@ -87,6 +88,7 @@
 			name = #{name}, idnum1 = #{idnum1}, idnum2 = #{idnum2},
 			phonenum = #{phonenum}, officenum = #{officenum}, email = #{email},
 			team = #{team}, level = #{level}, level_num = #{level_num},
+			joindate = COALESCE(NULLIF(#{joindate}, ''), joindate),
 			authority = #{authority}, user_status = #{user_status}
 		WHERE usernum = #{usernum}
 	</update>

@@ -27,6 +27,7 @@ public class UserService {
 	@Transactional
 	public void createUser(userVO user, userVO actor) {
 		requireAdmin(actor);
+		validate(user, true);
 		if (user.getUserpw() == null || user.getUserpw().isBlank()) {
 			throw new IllegalArgumentException("초기 비밀번호는 필수입니다.");
 		}
@@ -39,6 +40,7 @@ public class UserService {
 	@Transactional
 	public void updateUser(userVO user, userVO actor) {
 		requireAdmin(actor);
+		validate(user, false);
 		if (user.getUserpw() != null && !user.getUserpw().isBlank()) {
 			user.setUserpw(passwordEncoder.encode(user.getUserpw()));
 		}
@@ -100,5 +102,27 @@ public class UserService {
 			case "사원" -> 400;
 			default -> 999;
 		};
+	}
+
+	private static void validate(userVO user, boolean creating) {
+		if (creating && blank(user.getUsernum())) {
+			throw new IllegalArgumentException("사원번호는 필수입니다.");
+		}
+		if (blank(user.getName()) || blank(user.getTeam()) || blank(user.getLevel())
+				|| blank(user.getUser_status())) {
+			throw new IllegalArgumentException("사원명, 부서, 직급, 근무상태는 필수입니다.");
+		}
+		if (blank(user.getIdnum1()) || !user.getIdnum1().matches("\\d{6}")
+				|| blank(user.getIdnum2()) || !user.getIdnum2().matches("\\d")) {
+			throw new IllegalArgumentException("주민번호 형식을 확인해 주세요.");
+		}
+		if (blank(user.getPhonenum()) || blank(user.getOfficenum())
+				|| blank(user.getEmail()) || !user.getEmail().contains("@")) {
+			throw new IllegalArgumentException("연락처와 이메일을 확인해 주세요.");
+		}
+	}
+
+	private static boolean blank(String value) {
+		return value == null || value.isBlank();
 	}
 }

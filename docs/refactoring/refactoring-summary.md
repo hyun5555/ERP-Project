@@ -15,7 +15,7 @@
 | CI | 수동 검증 | GitHub Actions에서 React 빌드와 `./mvnw test` 실행 | push·PR 시 자동 검증 구성 |
 | 백엔드 구조 | Controller의 업무 규칙·SQL 호출 비중이 큼 | Controller → Service → Mapper | 전자결재·공지·사원관리·메신저에 적용 |
 | 권한 | 로그인 여부와 화면 버튼에 의존하는 구간 존재 | URL 권한 + Service 객체 권한 이중 검사 | 관리자·작성자·결재자·첨부파일 권한 테스트 |
-| 프론트엔드 | Bootstrap 기반 JSP 화면 | React 19/Vite 8 전환 화면 + 반응형 CSS, 나머지는 점진 전환 | Bootstrap 제거, 기존 `.do` 주소 유지 |
+| 프론트엔드 | Bootstrap 기반 JSP 화면 | React 19/Vite 8 단일 앱 셸 + 도메인 모듈 + 반응형 CSS | Bootstrap·jQuery 업무 화면 제거, 기존 `.do` 주소 유지 |
 | 메신저 | 없음 | 1:1 실시간 메시지, 저장, 읽음, 안 읽음 수, 재접속 | 새로고침 후 이력 복구와 방 접근 권한 검증 |
 | 회귀 테스트 | 인증 핵심 흐름 4개 | 핵심 업무 흐름 18개 | 현재 로컬 테스트 18개 통과 |
 
@@ -145,8 +145,8 @@ approval_mapper.xml
 
 1. Bootstrap 4·5 의존을 제거하고 CSS Grid/Flex 기반 반응형 레이아웃으로 교체했다.
 2. React 19와 Vite 8을 도입하되 기존 Spring Security 세션과 `.do` 주소를 유지했다.
-3. 로그인, 공통 레이아웃, 메인, 결재 목록·상세를 우선 React 화면으로 전환했다.
-4. Spring MVC 모델 데이터에 직접 의존하지 않도록 React용 JSON API를 분리했다.
+3. 로그인, 공통 레이아웃, 메인, 결재, 공지, 사원관리, 내 정보, 비밀번호 변경을 React 화면으로 전환했다.
+4. Spring MVC 모델 데이터에 직접 의존하지 않도록 JSON API를 Dashboard·Approval·Notice·User 컨트롤러로 분리했다.
 5. 기존 파스텔 색상과 업무 화면의 정보 구조는 유지하면서 둥근 사이드바, 투명 카드, 다크 모드, 챗봇 버튼을 적용했다.
 6. 서비스 소개용 반응형 랜딩 페이지를 추가했다.
 7. 프론트 전환 전후 화면을 캡처하고 서버 응답 시간을 같은 스크립트로 측정했다.
@@ -162,7 +162,7 @@ approval_mapper.xml
 
 이 수치는 JSP 서버 렌더링과 일부 DB 조회 대신 React 셸 HTML을 반환하게 된 서버 응답 시간이다. JavaScript 다운로드, 렌더링, API 요청까지 포함한 브라우저 전체 체감 속도는 아니므로 Lighthouse 또는 Web Vitals 측정 전에는 사용자 체감 성능이 같은 비율로 개선됐다고 표현하지 않는다.
 
-React 최초 전환 시 번들은 JavaScript 249.59KB(gzip 76.96KB), CSS 39.76KB(gzip 8.87KB)였다. 메신저 기능이 포함된 현재 빌드는 JavaScript 277.78KB(gzip 84.41KB), CSS 43.27KB(gzip 9.42KB)다. 최초 전환 대비 JavaScript gzip은 7.45KB, CSS gzip은 0.55KB 증가했으며 이후 기능 추가 시 계속 추적한다.
+React 최초 전환 시 번들은 JavaScript 249.59KB(gzip 76.96KB), CSS 39.76KB(gzip 8.87KB)였다. 메신저와 전체 사원관리 화면이 포함된 현재 빌드는 JavaScript 308.18KB(gzip 90.87KB), CSS 49.52KB(gzip 10.46KB)다. 최초 전환 대비 JavaScript gzip은 13.91KB, CSS gzip은 1.59KB 증가했으며 이후 기능 추가 시 계속 추적한다.
 
 ### 2.6 사내 메신저 MVP
 
@@ -336,6 +336,20 @@ MySQL
 - 원인: 대상 URL이 React 메인 셸을 벗어나 각 JSP의 사이드바·푸터·다크모드·챗봇을 다시 렌더링했다. 공통 CSS만 공유해도 서로 다른 DOM과 JavaScript 컴포넌트 때문에 화면과 동작을 완전히 같게 만들 수 없었다.
 - 해결: 결재 작성·수정·수신·전체승인과 공지 목록·상세·작성 GET 요청을 모두 `app.jsp`로 연결했다. 기존 Service·Mapper를 재사용하는 JSON API를 추가하고 React `AppLayout` 안에서 각 화면을 렌더링해 사이드바, 다크모드, 사내 메신저, AI 챗봇을 하나의 컴포넌트로 통합했다. JSP fallback 사이드바에는 메뉴 전체 너비 규칙도 추가했다.
 - 검증: 최신 서버를 별도 포트로 실행해 결재수신·결재작성·전체승인·공지 목록·상세를 순서대로 이동했다. 모든 화면에서 같은 사이드바와 다크모드·메신저·AI 버튼이 유지됐고, 메신저 WebSocket 연결과 공지 상세 직접 새로고침도 정상 동작했다. `npm run build`와 Testcontainers MySQL 기반 통합 테스트 18개도 통과했다.
+
+### 4.19 사원관리·비밀번호 변경 화면만 JSP로 남음
+
+- 증상: 사원 목록·상세·등록·수정, 내 정보, 비밀번호 변경에서 공통 사이드바와 플로팅 기능이 다른 구조로 렌더링됐다.
+- 원인: 기존 JSP와 jQuery가 화면별 DOM, 이벤트, Spring MVC 모델을 직접 소유해 React 공통 레이아웃을 재사용할 수 없었다.
+- 해결: 해당 `.do` GET 요청은 모두 동일한 `app.jsp` 셸로 연결하고, 조회·등록·수정·삭제·비밀번호 변경을 `/api/users` JSON API로 분리했다. 화면은 `frontend/src/user` 모듈에서 렌더링하고 공통 `AppLayout`을 사용한다.
+- 보안: `/api/users/me`와 비밀번호 변경은 로그인 사용자에게, 나머지 사원관리 API는 관리자에게만 허용한다. 비밀번호 해시는 JSON 응답에 포함하지 않는다.
+- 검증: 일반 사용자의 관리자 API 403, 본인 API 접근, 관리자 CRUD, BCrypt 비밀번호 변경을 통합 테스트에 포함했다.
+
+### 4.20 단일 프론트·API 파일의 책임이 커짐
+
+- 증상: `App.jsx`와 `FrontendApiController`에 화면 및 도메인 API가 계속 누적됐다.
+- 원인: React 전환 초기에는 빠른 검증을 위해 하나의 파일에 라우팅과 화면을 모았다.
+- 해결: 프론트는 `layout`, `approval`, `notice`, `user`, `messenger`, `ai`로 나누고 `App.jsx`는 라우팅 조합만 담당하게 했다. 백엔드는 `DashboardApiController`, `ApprovalApiController`, `NoticeApiController`, `UserApiController`로 분리하고 기존 Service·Mapper를 그대로 재사용했다.
 
 ## 5. 포트폴리오에 사용할 수 있는 검증된 성과
 

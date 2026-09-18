@@ -108,7 +108,7 @@ React/Vite 전환 범위와 화면 캡처, 성능·트러블슈팅 기록은 [�
 
 * React 19 / Vite 8
 * 반응형 CSS / 다크모드
-* JSP·jQuery(점진적 전환 대상 화면)
+* Spring MVC의 단일 React 셸(`app.jsp`)
 
 ## Database
 
