@@ -43,6 +43,7 @@ import org.testcontainers.utility.MountableFile;
 
 import com.erp.mapper.LoginMapper;
 import com.erp.service.ApprovalService;
+import com.erp.service.ChatService;
 import com.erp.vo.approvalVO;
 import com.erp.vo.approval_file_VO;
 import com.erp.vo.approval_line_VO;
@@ -79,6 +80,9 @@ class CoreFlowIntegrationTest {
 
 	@Autowired
 	private ApprovalService approvalService;
+
+	@Autowired
+	private ChatService chatService;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -410,6 +414,34 @@ class CoreFlowIntegrationTest {
 				.contains("\"counts\"", "\"notices\"");
 		assertThat(get(admin, "/api/approvals?mode=0").body())
 				.contains("\"items\"", "\"totalCount\"");
+	}
+
+	@Test
+	@Order(18)
+	void messengerPersistsUnreadStateAndBlocksNonParticipants() throws Exception {
+		long roomNo = chatService.openRoom("2005004", "2005007");
+		String content = uniqueTitle("재접속 후에도 남는 메시지");
+		chatService.sendMessage(roomNo, "2005004", content);
+
+		assertThat(chatService.getRooms("2005007"))
+				.filteredOn(room -> room.getRoomNo() == roomNo)
+				.singleElement()
+				.extracting("unreadCount")
+				.isEqualTo(1);
+
+		HttpClient recipient = authenticatedClient("2005007");
+		HttpClient outsider = authenticatedClient("2005002");
+		assertThat(get(recipient, "/api/chat/rooms/" + roomNo + "/messages").body())
+				.contains(content);
+		assertThat(get(outsider, "/api/chat/rooms/" + roomNo + "/messages").statusCode())
+				.isEqualTo(403);
+
+		HttpResponse<String> read = postForm(recipient, "/api/chat/rooms/" + roomNo + "/read",
+				"/main.do", Map.of());
+		assertThat(read.statusCode()).isEqualTo(200);
+		assertThat(read.body()).contains("\"updated\":1");
+		assertThat(chatService.getMessages(roomNo, "2005007").getLast().getReadAt())
+				.isNotBlank();
 	}
 
 	private int createDraft(String titlePrefix, String drafter, List<String> approvers) {
