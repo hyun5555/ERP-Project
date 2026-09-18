@@ -3,7 +3,7 @@
 <%
 pageContext.setAttribute("menu", "recv");
 %>    
-<%@ include file="../include/header.jsp" %>>
+<%@ include file="../include/header.jsp" %>
 <!----------------------------------------------------기안서 보기 시작-------------------------------------------------------------------->
 <main class="page-content">
 	<div class="row mb-4">

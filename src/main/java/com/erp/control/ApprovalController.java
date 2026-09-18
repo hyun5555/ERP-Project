@@ -3,10 +3,7 @@ package com.erp.control;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,7 +12,6 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +28,6 @@ import com.erp.vo.userVO;
 @Controller
 public class ApprovalController {
 
-	private static final int PAGE_SIZE = 10;
-
 	private final ApprovalService approvalService;
 	private final Path uploadDirectory;
 
@@ -49,23 +43,8 @@ public class ApprovalController {
 	}
 
 	@GetMapping("/approval/recv.do")
-	public String approvalRecv(
-			@RequestParam(defaultValue = "") String kind,
-			@RequestParam(defaultValue = "") String status,
-			@RequestParam(defaultValue = "") String keyword,
-			@RequestParam(defaultValue = "1") int page,
-			HttpSession session, Model model) {
-		Map<String, Object> params = searchParams(kind, status, keyword, page);
-		params.put("usernum", loginUser(session).getUsernum());
-		int totalCount = approvalService.countReceived(params);
-
-		addPagination(model, page, totalCount);
-		model.addAttribute("approvalList", approvalService.getReceived(params));
-		model.addAttribute("kind", kind);
-		model.addAttribute("status", status);
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("app", new approvalVO());
-		return "approval/recv";
+	public String approvalRecv() {
+		return "app";
 	}
 
 	@GetMapping("/approval/view.do")
@@ -115,16 +94,8 @@ public class ApprovalController {
 	}
 
 	@GetMapping("/approval/write.do")
-	public String approvalWrite(HttpSession session, Model model) {
-		userVO loginUser = loginUser(session);
-		approvalVO approval = new approvalVO();
-		approval.setWritedate(LocalDate.now().toString());
-		approval.setUsernum(loginUser.getUsernum());
-
-		model.addAttribute("appVO", approval);
-		model.addAttribute("loginUser", loginUser);
-		model.addAttribute("modalList", approvalService.getAvailableApprovers(loginUser));
-		return "approval/write";
+	public String approvalWrite() {
+		return "app";
 	}
 
 	@PostMapping("/approval/write.do")
@@ -145,17 +116,9 @@ public class ApprovalController {
 
 	@GetMapping("/approval/modify.do")
 	public String approvalModify(@RequestParam int approval_no,
-			HttpSession session, Model model) {
-		userVO loginUser = loginUser(session);
-		approvalVO approval = approvalService.getEditableApproval(approval_no, loginUser.getUsernum());
-		approval.setWritedate(LocalDate.now().toString());
-
-		model.addAttribute("item", approval);
-		model.addAttribute("appfileList", approvalService.getFiles(approval_no));
-		model.addAttribute("addedLine", approvalService.getLines(approval_no));
-		model.addAttribute("loginUser", loginUser);
-		model.addAttribute("modalList", approvalService.getAvailableApprovers(loginUser));
-		return "approval/modify";
+			HttpSession session) {
+		approvalService.getEditableApproval(approval_no, loginUser(session).getUsernum());
+		return "app";
 	}
 
 	@PostMapping("/approval/modify.do")
@@ -176,23 +139,8 @@ public class ApprovalController {
 	}
 
 	@GetMapping("/approval/allok.do")
-	public String approvalAllok(
-			@RequestParam(defaultValue = "") String kind,
-			@RequestParam(defaultValue = "") String keyword,
-			@RequestParam(defaultValue = "") String team,
-			@RequestParam(defaultValue = "1") int page,
-			Model model) {
-		Map<String, Object> params = searchParams(kind, "", keyword, page);
-		if (!"부서".equals(team)) {
-			params.put("team", team);
-		}
-		int totalCount = approvalService.countCompleted(params);
-		addPagination(model, page, totalCount);
-		model.addAttribute("ListAll", approvalService.getCompleted(params));
-		model.addAttribute("kind", kind);
-		model.addAttribute("keyword", keyword);
-		model.addAttribute("team", team);
-		return "approval/allok";
+	public String approvalAllok() {
+		return "app";
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
@@ -228,29 +176,6 @@ public class ApprovalController {
 
 	private static userVO loginUser(HttpSession session) {
 		return (userVO) session.getAttribute("loginUser");
-	}
-
-	private static Map<String, Object> searchParams(
-			String kind, String status, String keyword, int page) {
-		Map<String, Object> params = new HashMap<>();
-		if (!"문서구분".equals(kind)) {
-			params.put("kind", kind);
-		}
-		params.put("status", status);
-		params.put("keyword", keyword);
-		params.put("offset", Math.max(0, page - 1) * PAGE_SIZE);
-		params.put("limit", PAGE_SIZE);
-		return params;
-	}
-
-	private static void addPagination(Model model, int page, int totalCount) {
-		int totalPages = (int) Math.ceil((double) totalCount / PAGE_SIZE);
-		int startBlock = (page - 1) - ((page - 1) % 10) + 1;
-		model.addAttribute("page", page);
-		model.addAttribute("startbk", startBlock);
-		model.addAttribute("endbk", Math.min(startBlock + 9, totalPages));
-		model.addAttribute("totalCount", totalCount);
-		model.addAttribute("totalpage", totalPages);
 	}
 
 }

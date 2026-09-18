@@ -15,7 +15,6 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,15 +24,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.erp.service.NoticeService;
-import com.erp.util.WebUtil;
 import com.erp.vo.noticeVO;
-import com.erp.vo.searchVO;
 import com.erp.vo.userVO;
 
 @Controller
 public class NoticeController {
-
-	private static final int PAGE_SIZE = 10;
 
 	private final NoticeService noticeService;
 	private final Path uploadDirectory;
@@ -45,38 +40,14 @@ public class NoticeController {
 	}
 
 	@GetMapping("/notice/list.do")
-	public String noticeList(@RequestParam(defaultValue = "1") int page,
-			@RequestParam(required = false) String notice_team,
-			@RequestParam(required = false) String searchWord,
-			Model model) {
-		page = Math.max(1, page);
-		searchVO search = new searchVO();
-		search.setPageno(page);
-		search.setSearchWord(searchWord);
-		search.setNotice_team(notice_team);
-
-		int total = noticeService.countNotices(search);
-		int maxPage = (int) Math.ceil((double) total / PAGE_SIZE);
-		int startBlock = (page - 1) - ((page - 1) % 10) + 1;
-
-		model.addAttribute("total", total);
-		model.addAttribute("currpage", page);
-		model.addAttribute("maxpage", maxPage);
-		model.addAttribute("startbk", startBlock);
-		model.addAttribute("endbk", Math.min(startBlock + 9, maxPage));
-		model.addAttribute("list", noticeService.getNotices(search));
-		model.addAttribute("notice_team", notice_team);
-		model.addAttribute("searchWord", searchWord);
-		return "notice/list";
+	public String noticeList() {
+		return "app";
 	}
 
 	@GetMapping("/notice/view.do")
-	public String noticeView(@RequestParam("notice_no") int noticeNo, Model model) {
-		noticeVO notice = noticeService.getNotice(noticeNo);
-		notice.setNotice_content(WebUtil.Text2HTML(notice.getNotice_content()));
-		model.addAttribute("notice", notice);
-		model.addAttribute("team", noticeService.getNoticeTeams(noticeNo));
-		return "notice/view";
+	public String noticeView(@RequestParam("notice_no") int noticeNo) {
+		noticeService.getNotice(noticeNo);
+		return "app";
 	}
 
 	@GetMapping("/notice/down.do")
@@ -106,7 +77,7 @@ public class NoticeController {
 
 	@GetMapping("/notice/write.do")
 	public String noticeWrite() {
-		return "notice/write";
+		return "app";
 	}
 
 	@PostMapping("/notice/writeOK.do")

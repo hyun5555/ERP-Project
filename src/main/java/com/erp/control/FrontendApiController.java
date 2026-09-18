@@ -1,5 +1,6 @@
 package com.erp.control;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,8 @@ import com.erp.vo.approvalVO;
 import com.erp.vo.approval_file_VO;
 import com.erp.vo.approval_line_VO;
 import com.erp.vo.noticeVO;
+import com.erp.vo.notice_teamVO;
+import com.erp.vo.searchVO;
 import com.erp.vo.userVO;
 
 @RestController
@@ -77,6 +80,42 @@ public class FrontendApiController {
 				mode, kind, status, keyword);
 	}
 
+	@GetMapping("/approvals/received")
+	public ApprovalListResponse receivedApprovals(
+			@RequestParam(defaultValue = "") String kind,
+			@RequestParam(defaultValue = "") String status,
+			@RequestParam(defaultValue = "") String keyword,
+			@RequestParam(defaultValue = "1") int page,
+			HttpSession session) {
+		page = Math.max(page, 1);
+		Map<String, Object> params = searchParams(kind, status, keyword, page);
+		params.put("usernum", loginUser(session).getUsernum());
+		int totalCount = approvalService.countReceived(params);
+		return approvalList(approvalService.getReceived(params), page, totalCount,
+				"received", kind, status, keyword);
+	}
+
+	@GetMapping("/approvals/completed")
+	public ApprovalListResponse completedApprovals(
+			@RequestParam(defaultValue = "") String kind,
+			@RequestParam(defaultValue = "") String team,
+			@RequestParam(defaultValue = "") String keyword,
+			@RequestParam(defaultValue = "1") int page) {
+		page = Math.max(page, 1);
+		Map<String, Object> params = searchParams(kind, "", keyword, page);
+		if (!team.isBlank() && !"부서".equals(team)) params.put("team", team);
+		int totalCount = approvalService.countCompleted(params);
+		return approvalList(approvalService.getCompleted(params), page, totalCount,
+				"completed", kind, team, keyword);
+	}
+
+	@GetMapping("/approvals/write-options")
+	public ApprovalWriteOptions approvalWriteOptions(HttpSession session) {
+		userVO user = loginUser(session);
+		return new ApprovalWriteOptions(UserSummary.from(user), LocalDate.now().toString(),
+				approvalService.getAvailableApprovers(user).stream().map(UserSummary::from).toList());
+	}
+
 	@GetMapping("/approvals/{approvalNo}")
 	public ApprovalDetailResponse approval(@PathVariable int approvalNo, HttpSession session) {
 		userVO user = loginUser(session);
@@ -92,6 +131,33 @@ public class FrontendApiController {
 				lines.stream().map(ApprovalLine::from).toList(),
 				approvalService.getFiles(approvalNo).stream().map(ApprovalFile::from).toList(),
 				editable, owner && "대기중".equals(approval.getDocument_status()), approver);
+	}
+
+	@GetMapping("/notices")
+	public NoticeListResponse notices(
+			@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "") String notice_team,
+			@RequestParam(defaultValue = "") String searchWord) {
+		page = Math.max(page, 1);
+		searchVO search = new searchVO();
+		search.setPageno(page);
+		search.setNotice_team(notice_team);
+		search.setSearchWord(searchWord);
+		int totalCount = noticeService.countNotices(search);
+		return new NoticeListResponse(
+				noticeService.getNotices(search).stream().map(NoticeListItem::from).toList(),
+				page, Math.max(1, (int) Math.ceil((double) totalCount / PAGE_SIZE)), totalCount,
+				notice_team, searchWord);
+	}
+
+	@GetMapping("/notices/{noticeNo}")
+	public NoticeDetail notice(@PathVariable int noticeNo, HttpSession session) {
+		noticeVO notice = noticeService.getNotice(noticeNo);
+		List<String> teams = noticeService.getNoticeTeams(noticeNo).stream()
+				.map(notice_teamVO::getTeam_name).toList();
+		String downloadUrl = notice.getFname() == null || notice.getFname().isBlank()
+				? null : "/ERP/notice/down.do?notice_no=" + noticeNo;
+		return NoticeDetail.from(notice, teams, downloadUrl, loginUser(session).isAuthority());
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
@@ -125,6 +191,13 @@ public class FrontendApiController {
 		};
 	}
 
+	private static ApprovalListResponse approvalList(List<approvalVO> approvals, int page,
+			int totalCount, String mode, String kind, String status, String keyword) {
+		return new ApprovalListResponse(approvals.stream().map(ApprovalItem::from).toList(), page,
+				Math.max(1, (int) Math.ceil((double) totalCount / PAGE_SIZE)), totalCount,
+				mode, kind, status, keyword);
+	}
+
 	public record CsrfInfo(String parameterName, String headerName, String token) {}
 
 	public record SessionResponse(boolean authenticated, UserSummary user, CsrfInfo csrf) {}
@@ -143,6 +216,29 @@ public class FrontendApiController {
 		static NoticeItem from(noticeVO notice) {
 			return new NoticeItem(notice.getNotice_no(), notice.getNotice_title(),
 					notice.isIs_important(), notice.getnoticedate());
+		}
+	}
+
+	public record NoticeListResponse(List<NoticeListItem> items, int page, int totalPages,
+			int totalCount, String team, String keyword) {}
+
+	public record NoticeListItem(int noticeNo, String title, boolean important, String date,
+			String writer) {
+		static NoticeListItem from(noticeVO notice) {
+			return new NoticeListItem(notice.getNotice_no(), notice.getNotice_title(),
+					notice.isIs_important(), notice.getnoticedate(), notice.getUsername());
+		}
+	}
+
+	public record NoticeDetail(int noticeNo, String title, String content, boolean important,
+			boolean main, String date, String writer, List<String> teams, String fileName,
+			String downloadUrl, boolean canDelete) {
+		static NoticeDetail from(noticeVO notice, List<String> teams, String downloadUrl,
+				boolean canDelete) {
+			return new NoticeDetail(notice.getNotice_no(), notice.getNotice_title(),
+					notice.getNotice_content(), notice.isIs_important(), notice.isIs_main(),
+					notice.getnoticedate(), notice.getUsername(), teams, notice.getFname(),
+					downloadUrl, canDelete);
 		}
 	}
 
@@ -187,4 +283,7 @@ public class FrontendApiController {
 
 	public record ApprovalDetailResponse(ApprovalDetail item, List<ApprovalLine> lines,
 			List<ApprovalFile> files, boolean canEdit, boolean canDelete, boolean canApprove) {}
+
+	public record ApprovalWriteOptions(UserSummary drafter, String date,
+			List<UserSummary> approvers) {}
 }

@@ -4,7 +4,7 @@
 			<main class="page-content">
 				<footer class="py-3 my-4">
 					<ul class="footer-nav d-flex align-items-center border-bottom pb-3 mb-3 custom-footer">
-						<li class="nav-item home-icon"><a href="/ERP/main.jsp"
+						<li class="nav-item home-icon"><a href="/ERP/main.do"
 							class="nav-link text-body-secondary text-start"> <i
 								class="fa-solid fa-house"></i>
 						</a></li>

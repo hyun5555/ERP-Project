@@ -12,6 +12,7 @@
 	<title>EZEN Works</title>
 	<script>document.documentElement.dataset.theme = localStorage.getItem('erp-theme') || 'light';</script>
 	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/app/app.css">
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/workspace-shell.css">
 </head>
 <body>
 	<div id="root"><div class="app-loading">업무 공간을 불러오는 중입니다.</div></div>

@@ -414,6 +414,16 @@ class CoreFlowIntegrationTest {
 				.contains("\"counts\"", "\"notices\"");
 		assertThat(get(admin, "/api/approvals?mode=0").body())
 				.contains("\"items\"", "\"totalCount\"");
+		assertThat(get(admin, "/api/approvals/received").body())
+				.contains("\"items\"", "\"mode\":\"received\"");
+		assertThat(get(admin, "/api/approvals/completed").body())
+				.contains("\"items\"", "\"mode\":\"completed\"");
+		assertThat(get(admin, "/api/approvals/write-options").body())
+				.contains("\"drafter\"", "\"approvers\"");
+		assertThat(get(admin, "/api/notices").body())
+				.contains("\"items\"", "\"totalCount\"");
+		assertThat(get(admin, "/api/notices/1").body())
+				.contains("\"noticeNo\":1", "\"teams\"");
 	}
 
 	@Test

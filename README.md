@@ -1,6 +1,6 @@
 # ERP-Project
 
-### Spring Boot·React 기반 기업 전자결재 웹 서비스
+### Spring Boot·React 기반 기업 업무 플랫폼
 
 ## 📌 프로젝트 소개
 
@@ -10,8 +10,8 @@
   <img width="958" height="520" alt="Image" src="https://github.com/user-attachments/assets/ab251831-3a4d-4c4c-b869-f820fe7724e5" />
 </p>
 
-EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리 기능을 통합하여
-비대면 업무 환경에서 효율적인 문서 처리와 정보 관리를 지원하는 전자결재 웹 서비스입니다.
+EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리, 1:1 메신저를 통합하여
+문서 처리와 사내 협업을 지원하는 업무 플랫폼입니다.
 
 본 프로젝트는 실제 기업 전자결재 시스템의 업무 흐름을 이해하고,
 프론트엔드와 백엔드를 모두 구현하며 협업 기반 웹 개발 경험을 쌓기 위해 진행되었습니다.
@@ -40,12 +40,14 @@ npm run build
 ./scripts/benchmark.sh 측정이름
 ```
 
-17개 통합 테스트는 Testcontainers가 생성한 격리 MySQL에 연결해 로그인, BCrypt 전환·비밀번호 변경, React용 JSON API, 관리자 API, 전자결재 작성·승인·반려·수정·첨부파일 권한·롤백을 확인합니다. 개발용 MySQL 데이터는 변경하지 않습니다.
+18개 통합 테스트는 Testcontainers가 생성한 격리 MySQL에 연결해 로그인, BCrypt 전환·비밀번호 변경, React용 JSON API, 관리자 API, 전자결재 작성·승인·반려·수정·첨부파일 권한·롤백, 메신저 저장·읽음·접근 권한을 확인합니다. 개발용 MySQL 데이터는 변경하지 않습니다.
 성능 측정 결과는 `performance/results/`에 저장됩니다.
 
+전체 리팩터링 결과, 검증된 성능 수치와 트러블슈팅은 [리팩터링 종합 기록](docs/refactoring/refactoring-summary.md)에 정리했습니다.
 전자결재 리팩터링 구조, 테스트 범위, 트러블슈팅과 Before/After 수치는 [전자결재 리팩터링 기록](docs/refactoring/approval-refactoring.md)에 정리했습니다.
 권한 강화와 공지사항·사원관리 리팩터링 기록은 [권한·공지·사원관리 리팩터링 기록](docs/refactoring/access-notice-user-refactoring.md)에 정리했습니다.
 React/Vite 전환 범위와 화면 캡처, 성능·트러블슈팅 기록은 [프론트엔드 React 전환 기록](docs/refactoring/frontend-react-transition.md)에 정리했습니다.
+1:1 사내 메신저의 구조, 권한, 재접속과 검증 내용은 [사내 메신저 MVP 기록](docs/refactoring/messenger-mvp.md)에 정리했습니다.
 
 ---
 
@@ -100,6 +102,7 @@ React/Vite 전환 범위와 화면 캡처, 성능·트러블슈팅 기록은 [�
 * Spring Boot 4.1.1
 * MyBatis
 * Spring Security
+* Spring WebSocket / STOMP SimpleBroker
 
 ## Frontend
 
@@ -269,6 +272,19 @@ React/Vite 전환 범위와 화면 캡처, 성능·트러블슈팅 기록은 [�
 * 관리자와 일반 사용자 권한 분리
 * 주민번호 기반 생년월일 및 성별 처리
 * 자동 생성 사원번호 기능
+
+---
+
+## 7. 사내 메신저
+
+Spring WebSocket, STOMP SimpleBroker, MySQL로 구현한 1:1 메신저 MVP입니다.
+
+### ✔ 주요 기능
+
+* 실시간 텍스트 메시지
+* 대화 이력 저장 및 재접속 복구
+* 읽음 처리 및 안 읽은 메시지 수
+* 대화방 참여자 권한 검사
 
 ---
 
