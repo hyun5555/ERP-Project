@@ -71,6 +71,16 @@ public class NoticeService {
 		return noticeMapper.selectMainNotices();
 	}
 
+	public List<noticeVO> getRecentForUser(userVO user) {
+		String teamCode = switch (user.getTeam()) {
+			case "개발" -> "100";
+			case "디자인" -> "200";
+			case "경영지원" -> "300";
+			default -> null;
+		};
+		return noticeMapper.selectRecentForUser(teamCode, user.isAuthority());
+	}
+
 	private static void requireAdmin(userVO actor) {
 		if (actor == null || !actor.isAuthority()) {
 			throw new AccessDeniedException("관리자만 공지사항을 변경할 수 있습니다.");

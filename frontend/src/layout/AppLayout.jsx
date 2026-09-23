@@ -33,7 +33,7 @@ export function AppLayout({ session, dashboard, route, navigate, drawerOpen, set
         <Messenger user={session.user} csrf={session.csrf} open={messengerOpen} toggle={() => { setMessengerOpen((value) => !value); setChatOpen(false) }} />
         <button className="floating-button chat-button" onClick={() => { setChatOpen((open) => !open); setMessengerOpen(false) }} aria-label={chatOpen ? 'AI 챗봇 닫기' : 'AI 챗봇 열기'}><Icon name={chatOpen ? 'close' : 'chat'} /></button>
       </div>
-      {chatOpen && <ChatPanel close={() => setChatOpen(false)} />}
+      {chatOpen && <ChatPanel csrf={session.csrf} close={() => setChatOpen(false)} />}
     </div>
   )
 }

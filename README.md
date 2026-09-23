@@ -29,6 +29,15 @@ npm ci
 npm run build
 ```
 
+로컬 AI 챗봇까지 확인하려면 별도 터미널에서 기본 모델을 준비합니다.
+
+```bash
+ollama pull qwen3:4b
+ollama serve
+```
+
+모델 서버 주소와 모델은 `ERP_AI_BASE_URL`, `ERP_AI_MODEL` 환경 변수로 변경할 수 있습니다. Ollama가 꺼져 있어도 ERP의 다른 업무 기능은 실행됩니다.
+
 - 테스트 계정: `admin` / `1234`
 - MySQL: `localhost:3307`, 데이터베이스·사용자·비밀번호 `erp`
 - 종료: VS Code 디버그 중지 후 `Terminal > Run Task > mysql: down`
@@ -40,7 +49,7 @@ npm run build
 ./scripts/benchmark.sh 측정이름
 ```
 
-18개 통합 테스트는 Testcontainers가 생성한 격리 MySQL에 연결해 로그인, BCrypt 전환·비밀번호 변경, React용 JSON API, 관리자 API, 전자결재 작성·승인·반려·수정·첨부파일 권한·롤백, 메신저 저장·읽음·접근 권한을 확인합니다. 개발용 MySQL 데이터는 변경하지 않습니다.
+19개 통합 테스트는 Testcontainers가 생성한 격리 MySQL에 연결해 로그인, BCrypt 전환·비밀번호 변경, React용 JSON API, 관리자 API, 전자결재 작성·승인·반려·수정·첨부파일 권한·롤백, 메신저 저장·읽음·접근 권한, 로컬 AI 스트리밍·문맥 권한을 확인합니다. AI 테스트는 실제 모델 대신 가짜 응답을 사용하며 개발용 MySQL 데이터는 변경하지 않습니다.
 성능 측정 결과는 `performance/results/`에 저장됩니다.
 
 전체 리팩터링 결과, 검증된 성능 수치와 트러블슈팅은 [리팩터링 종합 기록](docs/refactoring/refactoring-summary.md)에 정리했습니다.
@@ -48,6 +57,7 @@ npm run build
 권한 강화와 공지사항·사원관리 리팩터링 기록은 [권한·공지·사원관리 리팩터링 기록](docs/refactoring/access-notice-user-refactoring.md)에 정리했습니다.
 React/Vite 전환 범위와 화면 캡처, 성능·트러블슈팅 기록은 [프론트엔드 React 전환 기록](docs/refactoring/frontend-react-transition.md)에 정리했습니다.
 1:1 사내 메신저의 구조, 권한, 재접속과 검증 내용은 [사내 메신저 MVP 기록](docs/refactoring/messenger-mvp.md)에 정리했습니다.
+로컬 LLM 챗봇의 권한별 문맥, 스트리밍, 장애 처리와 측정 기준은 [로컬 LLM 챗봇 MVP 기록](docs/refactoring/local-llm-mvp.md)에 정리했습니다.
 
 ---
 

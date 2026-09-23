@@ -70,10 +70,25 @@
 	</select>
 
 	<select id="selectMainNotices" resultType="com.erp.vo.noticeVO">
-		SELECT n.notice_no, n.notice_title, DATE(n.noticedate) AS noticedate,
+		SELECT n.notice_no, n.notice_title, n.notice_content, DATE(n.noticedate) AS noticedate,
 			n.is_important, u.name AS username
 		FROM notice n
 		LEFT JOIN user u ON u.usernum = n.usernum
+		ORDER BY n.is_important DESC, n.notice_no DESC
+		LIMIT 5
+	</select>
+
+	<select id="selectRecentForUser" resultType="com.erp.vo.noticeVO">
+		SELECT n.notice_no, n.notice_title, n.notice_content,
+			DATE(n.noticedate) AS noticedate, n.is_important, u.name AS username
+		FROM notice n
+		LEFT JOIN user u ON u.usernum = n.usernum
+		WHERE #{admin} = TRUE
+		OR EXISTS (
+			SELECT 1 FROM notice_team nt
+			WHERE nt.notice_no = n.notice_no
+			AND (nt.notice_team = '999' OR nt.notice_team = #{teamCode})
+		)
 		ORDER BY n.is_important DESC, n.notice_no DESC
 		LIMIT 5
 	</select>

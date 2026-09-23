@@ -49,6 +49,9 @@ public interface ApprovalMapper {
 
 	List<approvalVO> selectRecvApprovalList(Map<String, Object> params);
 
+	List<approvalVO> selectPendingForApprover(
+			@Param("usernum") String usernum, @Param("limit") int limit);
+
 	int countRecvApprovalList(Map<String, Object> params);
 
 	List<approvalVO> selectListAll(Map<String, Object> params);

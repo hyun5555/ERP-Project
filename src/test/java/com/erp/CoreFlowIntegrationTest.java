@@ -2,7 +2,12 @@ package com.erp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 
+import java.io.IOException;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
 import java.net.URI;
@@ -19,6 +24,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +43,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mysql.MySQLContainer;
@@ -44,6 +52,8 @@ import org.testcontainers.utility.MountableFile;
 import com.erp.mapper.LoginMapper;
 import com.erp.service.ApprovalService;
 import com.erp.service.ChatService;
+import com.erp.service.LocalLlmClient;
+import com.erp.service.LocalLlmClient.GenerationStats;
 import com.erp.vo.approvalVO;
 import com.erp.vo.approval_file_VO;
 import com.erp.vo.approval_line_VO;
@@ -83,6 +93,9 @@ class CoreFlowIntegrationTest {
 
 	@Autowired
 	private ChatService chatService;
+
+	@MockitoBean
+	private LocalLlmClient localLlmClient;
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -446,6 +459,52 @@ class CoreFlowIntegrationTest {
 				.isNotBlank();
 	}
 
+	@Test
+	@Order(19)
+	void localAiStreamsAuthorizedContextAndHandlesModelFailure() throws Exception {
+		String allowedApproval = uniqueTitle("AI 허용 결재");
+		String hiddenApproval = uniqueTitle("AI 차단 결재");
+		createDraft(allowedApproval, "2005004", List.of("2005002"));
+		createDraft(hiddenApproval, "2005004", List.of("2005003"));
+
+		String allowedNotice = uniqueTitle("AI 개발 공지");
+		String hiddenNotice = uniqueTitle("AI 디자인 공지");
+		int allowedNoticeNo = insertNotice(allowedNotice, "100");
+		insertNotice(hiddenNotice, "200");
+
+		AtomicReference<String> prompt = new AtomicReference<>();
+		doAnswer(invocation -> {
+			prompt.set(invocation.getArgument(0));
+			Consumer<String> consumer = invocation.getArgument(1);
+			consumer.accept("테스트 ");
+			consumer.accept("응답");
+			return new GenerationStats("fake-model", 5, 12, 2);
+		}).when(localLlmClient).generate(anyString(), any());
+
+		HttpClient employee = authenticatedClient("2005002");
+		HttpResponse<String> response = sendJson(employee, "POST", "/api/ai/chat", "/main.do",
+				"{\"question\":\"내 업무를 알려줘\"}");
+
+		assertThat(response.statusCode()).isEqualTo(200);
+		assertThat(response.headers().firstValue("content-type").orElse(""))
+				.contains("text/event-stream");
+		assertThat(response.body())
+				.contains("event:token", "테스트", "응답", "event:done", "fake-model");
+		assertThat(prompt.get())
+				.contains(allowedApproval, allowedNotice)
+				.doesNotContain(hiddenApproval, hiddenNotice);
+
+		doThrow(new IOException("internal model error"))
+				.when(localLlmClient).generate(anyString(), any());
+		HttpResponse<String> failed = sendJson(employee, "POST", "/api/ai/chat", "/main.do",
+				"{\"question\":\"최근 공지를 알려줘\"}");
+		assertThat(failed.body())
+				.contains("event:error", "로컬 AI가 응답하지 않습니다")
+				.doesNotContain("internal model error");
+
+		jdbcTemplate.update("delete from notice where notice_no = ?", allowedNoticeNo);
+	}
+
 	private int createDraft(String titlePrefix, String drafter, List<String> approvers) {
 		return approvalService.createApproval(
 				draft(uniqueTitle(titlePrefix)), drafter, List.of(), approvers);
@@ -458,6 +517,17 @@ class CoreFlowIntegrationTest {
 		draft.setApproval_title(title);
 		draft.setApproval_content("통합 테스트 결재 내용");
 		return draft;
+	}
+
+	private int insertNotice(String title, String team) {
+		jdbcTemplate.update("insert into notice "
+				+ "(notice_title, notice_content, is_important, is_main, usernum) "
+				+ "values (?, '통합 테스트 공지 내용', false, false, 'admin')", title);
+		Integer noticeNo = jdbcTemplate.queryForObject(
+				"select notice_no from notice where notice_title = ?", Integer.class, title);
+		jdbcTemplate.update("insert into notice_team (notice_no, notice_team) values (?, ?)",
+				noticeNo, team);
+		return noticeNo;
 	}
 
 	private HttpClient authenticatedClient(String usernum) throws Exception {
@@ -503,7 +573,7 @@ class CoreFlowIntegrationTest {
 		assertThat(csrf.find()).as("CSRF token at " + csrfPage).isTrue();
 		HttpRequest request = HttpRequest.newBuilder(uri(path))
 				.header("Content-Type", "application/json")
-				.header("Accept", "application/json")
+				.header("Accept", "application/json, text/event-stream")
 				.header("X-CSRF-TOKEN", csrf.group(2))
 				.method(method, HttpRequest.BodyPublishers.ofString(body))
 				.build();

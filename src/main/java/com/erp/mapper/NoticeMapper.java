@@ -26,5 +26,8 @@ public interface NoticeMapper {
 
 	List<noticeVO> selectMainNotices();
 
+	List<noticeVO> selectRecentForUser(
+			@Param("teamCode") String teamCode, @Param("admin") boolean admin);
+
 	int deleteNotice(int noticeNo);
 }

@@ -140,6 +140,10 @@ public class ApprovalService {
 		return approvalMapper.selectRecvApprovalList(params);
 	}
 
+	public List<approvalVO> getPendingForApprover(String usernum, int limit) {
+		return approvalMapper.selectPendingForApprover(usernum, Math.max(1, Math.min(limit, 20)));
+	}
+
 	public int countReceived(Map<String, Object> params) {
 		return approvalMapper.countRecvApprovalList(params);
 	}

@@ -288,6 +288,23 @@
 		ORDER BY a.approval_no DESC
 		LIMIT #{offset}, #{limit}
 	</select>
+
+	<select id="selectPendingForApprover" resultMap="approvalListMap">
+		SELECT
+			a.approval_no, a.kind, a.approval_title, a.writedate, a.document_status,
+			a.usernum,
+			u.usernum AS drafter_usernum,
+			u.name AS drafter_name,
+			u.team AS drafter_team,
+			u.level AS drafter_level
+		FROM approval a
+		JOIN approval_line al ON a.approval_no = al.approval_no
+		LEFT JOIN user u ON a.usernum = u.usernum
+		WHERE al.approval_target = #{usernum}
+		AND al.approval_status = '대기'
+		ORDER BY a.approval_no DESC
+		LIMIT #{limit}
+	</select>
 	<!-- 2.3 전체승인내역 조회 -->
 	<select id="selectListAll" parameterType="map" resultMap="approvalListMap">
 		SELECT
