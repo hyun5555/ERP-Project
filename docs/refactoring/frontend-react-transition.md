@@ -25,7 +25,7 @@ Spring Boot
 기존 Service → Mapper → MySQL
 ```
 
-`App.jsx`는 URL 판별과 모듈 조합만 담당합니다. 기존 `.do` 주소의 GET 요청은 얇은 `app.jsp`를 반환하므로 새로고침과 URL 직접 접근이 가능하며, 업무 데이터는 도메인별 JSON API에서 읽습니다.
+`App.jsx`는 URL 판별과 모듈 조합만 담당합니다. 기존 `.do` 주소의 GET 요청은 Vite가 빌드한 정적 `index.html`로 전달되므로 새로고침과 URL 직접 접근이 가능하며, 업무 데이터는 도메인별 JSON API에서 읽습니다.
 
 ## 권한 경계
 
@@ -43,7 +43,8 @@ Spring Boot
 
 - 업무 화면 JSP 및 중복 include 19개 제거
 - Bootstrap 및 jQuery 기반 CSS·JavaScript 제거
-- 서버 렌더링은 `app.jsp`와 로그인 폴백 `login.jsp`만 유지
+- JSP·JSTL·Jasper 의존성 전체 제거, 랜딩·로그인·업무 화면 모두 단일 React 앱으로 통합
+- CSRF 토큰은 정적 HTML이 아닌 `GET /api/session` 응답에서 조회
 - CSS Grid/Flexbox와 미디어 쿼리로 모바일 반응형 처리
 - 모든 인증 화면에서 동일한 사이드바·다크 모드·메신저·챗봇 사용
 
@@ -58,7 +59,7 @@ Spring Boot
 
 이는 데이터가 포함된 JSP 대신 React 셸 HTML을 반환하는 서버 응답 시간입니다. JSON API와 브라우저 렌더링을 포함한 체감 성능 수치로 사용하지 않습니다.
 
-현재 프로덕션 빌드는 JavaScript 308.18KB(gzip 90.87KB), CSS 49.52KB(gzip 10.46KB)입니다.
+현재 프로덕션 빌드는 JavaScript 311.64KB(gzip 91.84KB), CSS 50.03KB(gzip 10.43KB)입니다.
 
 ## 트러블슈팅
 
@@ -68,7 +69,7 @@ Spring Boot
 
 ### React 전환 후 CSRF 테스트 실패
 
-기존 테스트가 숨은 `_csrf` 입력값을 읽고 있었습니다. React 요청용 meta 태그와 기존 폼 호환용 hidden input을 함께 제공해 회귀 없이 전환했습니다.
+기존 테스트가 JSP의 숨은 `_csrf` 입력값을 읽고 있었습니다. 로그인 화면까지 정적 React 셸로 바꾸면서 테스트와 클라이언트 모두 `GET /api/session`의 CSRF 정보를 사용하도록 통일했습니다.
 
 ### 사원관리 API 권한 분리
 
@@ -78,6 +79,6 @@ Spring Boot
 
 - `npm run build`: 성공
 - `./mvnw --batch-mode -DskipTests compile`: 성공
-- `./mvnw --batch-mode test`: 18개 성공, 실패 0, 오류 0
+- `./mvnw --batch-mode test`: 19개 성공, 실패 0, 오류 0
 - 일반 사용자 본인 정보·비밀번호 변경과 관리자 사원 CRUD 권한을 통합 테스트로 확인
 - 기존 `.do` 직접 접근과 동일 React 셸 반환을 통합 테스트로 확인

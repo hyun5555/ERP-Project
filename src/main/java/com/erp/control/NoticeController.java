@@ -41,13 +41,13 @@ public class NoticeController {
 
 	@GetMapping("/notice/list.do")
 	public String noticeList() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@GetMapping("/notice/view.do")
 	public String noticeView(@RequestParam("notice_no") int noticeNo) {
 		noticeService.getNotice(noticeNo);
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@GetMapping("/notice/down.do")
@@ -77,7 +77,7 @@ public class NoticeController {
 
 	@GetMapping("/notice/write.do")
 	public String noticeWrite() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@PostMapping("/notice/writeOK.do")

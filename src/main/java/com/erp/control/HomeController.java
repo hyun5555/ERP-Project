@@ -22,7 +22,7 @@ public class HomeController {
 
 	@GetMapping("/main.do")
 	public String main() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@GetMapping("/approval/count.do")

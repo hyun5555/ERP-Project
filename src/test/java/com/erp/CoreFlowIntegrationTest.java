@@ -64,8 +64,8 @@ import com.erp.vo.approval_line_VO;
 @TestMethodOrder(OrderAnnotation.class)
 class CoreFlowIntegrationTest {
 
-	private static final Pattern CSRF_INPUT = Pattern.compile(
-			"type=\"hidden\" name=\"([^\"]+)\" value=\"([^\"]+)\"");
+	private static final Pattern CSRF_JSON = Pattern.compile(
+			"\"parameterName\":\"([^\"]+)\",\"headerName\":\"([^\"]+)\",\"token\":\"([^\"]+)\"");
 
 	@Container
 	static final MySQLContainer MYSQL = new MySQLContainer("mysql:8.4")
@@ -109,14 +109,17 @@ class CoreFlowIntegrationTest {
 
 	@Test
 	@Order(1)
-	void loginPageIsAccessibleWithoutAuthentication() throws Exception {
+	void reactShellAndLoginSessionAreAccessibleWithoutAuthentication() throws Exception {
 		HttpResponse<String> landing = get(client, "/");
-		HttpResponse<String> response = get(client, "/login/login.do");
+		HttpResponse<String> login = get(client, "/login/login.do");
+		HttpResponse<String> session = get(client, "/api/session");
 
 		assertThat(landing.statusCode()).isEqualTo(200);
-		assertThat(landing.body()).contains("id=\"root\"", "EZEN Works");
-		assertThat(response.statusCode()).isEqualTo(200);
-		assertThat(response.body()).contains("사원번호", "_csrf");
+		assertThat(landing.body()).contains("id=\"root\"", "resources/app/app.js");
+		assertThat(login.statusCode()).isEqualTo(200);
+		assertThat(login.body()).contains("id=\"root\"", "resources/app/app.js");
+		assertThat(session.statusCode()).isEqualTo(200);
+		assertThat(session.body()).contains("\"authenticated\":false", "\"csrf\"");
 	}
 
 	@Test
@@ -189,7 +192,7 @@ class CoreFlowIntegrationTest {
 		int approvalNo = createDraft("반려 처리", "2005004", List.of("2005002"));
 		HttpClient approver = authenticatedClient("2005002");
 
-		assertThat(postForm(approver, "/approval/updateComment.do", "/approval/view.do?approval_no=" + approvalNo,
+		assertThat(postForm(approver, "/approval/updateComment.do",
 				Map.of("approval_no", String.valueOf(approvalNo), "approval_status", "반려", "comment", ""))
 				.statusCode()).isEqualTo(400);
 		assertThat(approvalService.getApproval(approvalNo).getDocument_status()).isEqualTo("대기중");
@@ -277,7 +280,7 @@ class CoreFlowIntegrationTest {
 				 "level":"사원","joindate":"2026-09-18","authority":false,"userStatus":"재직"}
 				""".formatted(usernum);
 
-		assertThat(sendJson(admin, "POST", "/api/users", "/user/write.do", create).statusCode())
+		assertThat(sendJson(admin, "POST", "/api/users", create).statusCode())
 				.isEqualTo(200);
 		Map<String, Object> inserted = jdbcTemplate.queryForMap(
 				"select userpw, firstlogin, level_num from user where usernum = ?", usernum);
@@ -292,14 +295,12 @@ class CoreFlowIntegrationTest {
 				 "joindate":"2026-09-18","authority":false,"userStatus":"재직"}
 				""";
 
-		assertThat(sendJson(admin, "PUT", "/api/users/" + usernum,
-				"/user/modify.do?usernum=" + usernum, update).statusCode()).isEqualTo(200);
+		assertThat(sendJson(admin, "PUT", "/api/users/" + usernum, update).statusCode()).isEqualTo(200);
 		assertThat(jdbcTemplate.queryForObject(
 				"select concat(name, ':', level_num) from user where usernum = ?", String.class, usernum))
 				.isEqualTo("수정사원:300");
 
-		assertThat(sendJson(admin, "DELETE", "/api/users/" + usernum,
-				"/user/view.do?usernum=" + usernum, "{}").statusCode()).isEqualTo(200);
+		assertThat(sendJson(admin, "DELETE", "/api/users/" + usernum, "{}").statusCode()).isEqualTo(200);
 		assertThat(jdbcTemplate.queryForObject(
 				"select count(*) from user where usernum = ?", Integer.class, usernum)).isZero();
 	}
@@ -311,13 +312,13 @@ class CoreFlowIntegrationTest {
 		HttpClient admin = authenticatedClient("admin");
 
 		assertThat(get(employee, "/notice/write.do").statusCode()).isEqualTo(403);
-		assertThat(postForm(employee, "/notice/delete.do", "/notice/view.do?notice_no=1",
+		assertThat(postForm(employee, "/notice/delete.do",
 				Map.of("notice_no", "1")).statusCode()).isEqualTo(403);
 		assertThat(get(employee, "/notice/view.do?notice_no=1").statusCode()).isEqualTo(200);
 		assertThat(get(admin, "/notice/write.do").statusCode()).isEqualTo(200);
 
 		String title = uniqueTitle("관리자 공지");
-		assertThat(postForm(admin, "/notice/writeOK.do", "/notice/write.do", Map.of(
+		assertThat(postForm(admin, "/notice/writeOK.do", Map.of(
 				"notice_title", title,
 				"notice_content", "관리자 전용 공지",
 				"notice_team", "100")).statusCode()).isEqualTo(302);
@@ -326,7 +327,7 @@ class CoreFlowIntegrationTest {
 		assertThat(jdbcTemplate.queryForObject(
 				"select count(*) from notice_team where notice_no = ?", Integer.class, noticeNo))
 				.isEqualTo(1);
-		assertThat(postForm(admin, "/notice/delete.do", "/notice/view.do?notice_no=" + noticeNo,
+		assertThat(postForm(admin, "/notice/delete.do",
 				Map.of("notice_no", String.valueOf(noticeNo))).statusCode()).isEqualTo(302);
 		assertThat(jdbcTemplate.queryForObject(
 				"select count(*) from notice where notice_no = ?", Integer.class, noticeNo)).isZero();
@@ -340,7 +341,7 @@ class CoreFlowIntegrationTest {
 
 		assertThat(get(other, "/approval/modify.do?approval_no=" + approvalNo).statusCode())
 				.isEqualTo(403);
-		assertThat(postForm(other, "/approval/modify.do", "/main.do", Map.of(
+		assertThat(postForm(other, "/approval/modify.do", Map.of(
 				"approval_no", String.valueOf(approvalNo),
 				"kind", "기안서",
 				"approval_code", "FORGED",
@@ -385,14 +386,12 @@ class CoreFlowIntegrationTest {
 	void passwordChangeRejectsWrongCurrentPasswordAndUsesBcrypt() throws Exception {
 		HttpClient employee = authenticatedClient("2005009");
 
-		HttpResponse<String> rejected = sendJson(employee, "POST", "/api/users/me/password",
-				"/login/changepw.do", """
+		HttpResponse<String> rejected = sendJson(employee, "POST", "/api/users/me/password", """
 				{"currentPassword":"wrong","newPassword":"Changed-1234!","confirmPassword":"Changed-1234!"}
 				""");
 		assertThat(rejected.statusCode()).isEqualTo(400);
 
-		HttpResponse<String> changed = sendJson(employee, "POST", "/api/users/me/password",
-				"/login/changepw.do", """
+		HttpResponse<String> changed = sendJson(employee, "POST", "/api/users/me/password", """
 				{"currentPassword":"1234","newPassword":"Changed-1234!","confirmPassword":"Changed-1234!"}
 				""");
 		assertThat(changed.statusCode()).isEqualTo(200);
@@ -451,8 +450,7 @@ class CoreFlowIntegrationTest {
 		assertThat(get(outsider, "/api/chat/rooms/" + roomNo + "/messages").statusCode())
 				.isEqualTo(403);
 
-		HttpResponse<String> read = postForm(recipient, "/api/chat/rooms/" + roomNo + "/read",
-				"/main.do", Map.of());
+		HttpResponse<String> read = postForm(recipient, "/api/chat/rooms/" + roomNo + "/read", Map.of());
 		assertThat(read.statusCode()).isEqualTo(200);
 		assertThat(read.body()).contains("\"updated\":1");
 		assertThat(chatService.getMessages(roomNo, "2005007").getLast().getReadAt())
@@ -482,7 +480,7 @@ class CoreFlowIntegrationTest {
 		}).when(localLlmClient).generate(anyString(), any());
 
 		HttpClient employee = authenticatedClient("2005002");
-		HttpResponse<String> response = sendJson(employee, "POST", "/api/ai/chat", "/main.do",
+		HttpResponse<String> response = sendJson(employee, "POST", "/api/ai/chat",
 				"{\"question\":\"내 업무를 알려줘\"}");
 
 		assertThat(response.statusCode()).isEqualTo(200);
@@ -496,7 +494,7 @@ class CoreFlowIntegrationTest {
 
 		doThrow(new IOException("internal model error"))
 				.when(localLlmClient).generate(anyString(), any());
-		HttpResponse<String> failed = sendJson(employee, "POST", "/api/ai/chat", "/main.do",
+		HttpResponse<String> failed = sendJson(employee, "POST", "/api/ai/chat",
 				"{\"question\":\"최근 공지를 알려줘\"}");
 		assertThat(failed.body())
 				.contains("event:error", "로컬 AI가 응답하지 않습니다")
@@ -543,21 +541,20 @@ class CoreFlowIntegrationTest {
 		form.put("approval_status", status);
 		form.put("comment", comment);
 		return postForm(http, "/approval/updateComment.do",
-				"/approval/view.do?approval_no=" + approvalNo, form);
+				form);
 	}
 
 	private HttpResponse<String> login(HttpClient http, String usernum, String password) throws Exception {
-		return postForm(http, "/login/login.do", "/login/login.do",
+		return postForm(http, "/login/login.do",
 				Map.of("usernum", usernum, "userpw", password));
 	}
 
 	private HttpResponse<String> postForm(HttpClient http, String path,
-			String csrfPage, Map<String, String> values) throws Exception {
-		Matcher csrf = CSRF_INPUT.matcher(get(http, csrfPage).body());
-		assertThat(csrf.find()).as("CSRF token at " + csrfPage).isTrue();
+			Map<String, String> values) throws Exception {
+		Matcher csrf = csrf(http);
 
 		StringBuilder form = new StringBuilder(csrf.group(1))
-				.append('=').append(encode(csrf.group(2)));
+				.append('=').append(encode(csrf.group(3)));
 		values.forEach((name, value) -> form.append('&').append(encode(name))
 				.append('=').append(encode(value)));
 		HttpRequest request = HttpRequest.newBuilder(uri(path))
@@ -568,16 +565,21 @@ class CoreFlowIntegrationTest {
 	}
 
 	private HttpResponse<String> sendJson(HttpClient http, String method, String path,
-			String csrfPage, String body) throws Exception {
-		Matcher csrf = CSRF_INPUT.matcher(get(http, csrfPage).body());
-		assertThat(csrf.find()).as("CSRF token at " + csrfPage).isTrue();
+			String body) throws Exception {
+		Matcher csrf = csrf(http);
 		HttpRequest request = HttpRequest.newBuilder(uri(path))
 				.header("Content-Type", "application/json")
 				.header("Accept", "application/json, text/event-stream")
-				.header("X-CSRF-TOKEN", csrf.group(2))
+				.header(csrf.group(2), csrf.group(3))
 				.method(method, HttpRequest.BodyPublishers.ofString(body))
 				.build();
 		return http.send(request, HttpResponse.BodyHandlers.ofString());
+	}
+
+	private Matcher csrf(HttpClient http) throws Exception {
+		Matcher csrf = CSRF_JSON.matcher(get(http, "/api/session").body());
+		assertThat(csrf.find()).as("CSRF token from /api/session").isTrue();
+		return csrf;
 	}
 
 	private HttpResponse<String> get(HttpClient http, String path) throws Exception {

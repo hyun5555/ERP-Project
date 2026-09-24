@@ -8,16 +8,16 @@ public class LoginController {
 
 	@GetMapping("/")
 	public String login() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@GetMapping("/login/login.do")
 	public String showLogin() {
-		return "login/login";
+		return "forward:/resources/app/index.html";
 	}
 
 	@GetMapping("/login/changepw.do")
 	public String changePasswordPage() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 }

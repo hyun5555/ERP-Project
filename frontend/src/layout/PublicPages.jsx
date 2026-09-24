@@ -78,6 +78,38 @@ export function LoginPage({ csrf }) {
   }
 
   return (
-    <main className="login-page"><section className="login-panel"><div className="login-card"><form onSubmit={submit} className="login-form"><label>사원번호<input name="usernum" autoComplete="username" autoFocus required /></label><label>비밀번호<input type="password" name="userpw" autoComplete="current-password" required /></label>{error && <p className="form-error" role="alert">{error}</p>}<button className="primary-button login-button" disabled={loading}>{loading ? '로그인 중…' : 'Login'}</button></form><p className="welcome-text">ezen소프트웨어에 오신 것을 환영합니다.</p></div></section></main>
+    <main className="login-page">
+      <a className="login-home" href={`${BASE}/`}><span>EW</span> EZEN WORKS</a>
+      <section className="login-brand" aria-label="서비스 소개">
+        <div className="login-copy">
+          <p className="eyebrow">SMART WORKSPACE</p>
+          <h1>더 맑고 가벼운<br/><em>업무의 시작.</em></h1>
+          <p>전자결재부터 사내 메신저와 AI 업무 지원까지, 필요한 흐름을 한곳에서 이어갑니다.</p>
+          <div className="login-features">
+            <span><Icon name="document"/> 전자결재</span>
+            <span><Icon name="users"/> 사내 메신저</span>
+            <span><Icon name="chat"/> AI 업무 지원</span>
+          </div>
+        </div>
+        <div className="login-preview" aria-hidden="true">
+          <span>오늘의 결재</span><strong>3<small>건</small></strong><i>확인할 업무를 한눈에</i>
+        </div>
+      </section>
+      <section className="login-panel">
+        <div className="login-card">
+          <p className="eyebrow">WELCOME BACK</p>
+          <h2>업무 공간에 로그인</h2>
+          <p className="login-description">사원번호와 비밀번호를 입력해 주세요.</p>
+          <form onSubmit={submit} className="login-form">
+            <label>사원번호<input name="usernum" autoComplete="username" autoFocus required placeholder="사원번호 입력" /></label>
+            <label>비밀번호<input type="password" name="userpw" autoComplete="current-password" required placeholder="비밀번호 입력" /></label>
+            {error && <p className="form-error" role="alert">{error}</p>}
+            <button className="primary-button login-button" disabled={loading}>{loading ? '로그인 중…' : '로그인'}</button>
+          </form>
+          <p className="login-help">계정 문의는 사내 관리자에게 요청해 주세요.</p>
+          <a className="login-back" href={`${BASE}/`}>← 서비스 소개로 돌아가기</a>
+        </div>
+      </section>
+    </main>
   )
 }

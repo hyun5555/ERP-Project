@@ -11,6 +11,6 @@ public class UserController {
 		"/user/write.do", "/user/myinfo.do"
 	})
 	public String app() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BASE, csrfFromMeta, currentRoute, getJson } from './api'
+import { BASE, currentRoute, getJson } from './api'
 import { ApprovalCollection, ApprovalDetail, ApprovalForm, ApprovalList } from './approval/ApprovalPages'
 import { AppLayout } from './layout/AppLayout'
 import { Dashboard } from './layout/Dashboard'
@@ -60,7 +60,9 @@ export default function App() {
   }
 
   if (isLandingPath(route.path)) return <LandingPage authenticated={session?.authenticated}/>
-  if (route.path.includes('/login/login.do')) return <LoginPage csrf={session?.csrf || csrfFromMeta()}/>
+  if (route.path.includes('/login/login.do')) {
+    return session ? <LoginPage csrf={session.csrf}/> : <PageState message={error || '로그인 화면을 준비하고 있습니다.'}/>
+  }
   if (!session?.authenticated) return <PageState message={error || '업무 공간을 준비하고 있습니다.'}/>
 
   return (

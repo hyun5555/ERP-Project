@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: '/ERP/resources/app/',
   build: {
-    outDir: fileURLToPath(new URL('../src/main/webapp/resources/app', import.meta.url)),
+    outDir: fileURLToPath(new URL('../src/main/resources/static/resources/app', import.meta.url)),
     emptyOutDir: true,
     rollupOptions: {
       output: {

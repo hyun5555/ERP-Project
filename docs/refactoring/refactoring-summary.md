@@ -370,14 +370,14 @@ MySQL
 
 - 증상: 메인·결재 목록·상세는 새 React UI였지만 결재 작성·수신·전체승인·공지사항은 구형 사이드바와 회색 JSP 화면으로 표시됐다.
 - 원인: 대상 URL이 React 메인 셸을 벗어나 각 JSP의 사이드바·푸터·다크모드·챗봇을 다시 렌더링했다. 공통 CSS만 공유해도 서로 다른 DOM과 JavaScript 컴포넌트 때문에 화면과 동작을 완전히 같게 만들 수 없었다.
-- 해결: 결재 작성·수정·수신·전체승인과 공지 목록·상세·작성 GET 요청을 모두 `app.jsp`로 연결했다. 기존 Service·Mapper를 재사용하는 JSON API를 추가하고 React `AppLayout` 안에서 각 화면을 렌더링해 사이드바, 다크모드, 사내 메신저, AI 챗봇을 하나의 컴포넌트로 통합했다. JSP fallback 사이드바에는 메뉴 전체 너비 규칙도 추가했다.
+- 해결: 결재 작성·수정·수신·전체승인과 공지 목록·상세·작성 GET 요청을 모두 단일 React 셸로 연결했다. 기존 Service·Mapper를 재사용하는 JSON API를 추가하고 React `AppLayout` 안에서 각 화면을 렌더링해 사이드바, 다크모드, 사내 메신저, AI 챗봇을 하나의 컴포넌트로 통합했다.
 - 검증: 최신 서버를 별도 포트로 실행해 결재수신·결재작성·전체승인·공지 목록·상세를 순서대로 이동했다. 모든 화면에서 같은 사이드바와 다크모드·메신저·AI 버튼이 유지됐고, 메신저 WebSocket 연결과 공지 상세 직접 새로고침도 정상 동작했다. `npm run build`와 Testcontainers MySQL 기반 통합 테스트 18개도 통과했다.
 
 ### 4.19 사원관리·비밀번호 변경 화면만 JSP로 남음
 
 - 증상: 사원 목록·상세·등록·수정, 내 정보, 비밀번호 변경에서 공통 사이드바와 플로팅 기능이 다른 구조로 렌더링됐다.
 - 원인: 기존 JSP와 jQuery가 화면별 DOM, 이벤트, Spring MVC 모델을 직접 소유해 React 공통 레이아웃을 재사용할 수 없었다.
-- 해결: 해당 `.do` GET 요청은 모두 동일한 `app.jsp` 셸로 연결하고, 조회·등록·수정·삭제·비밀번호 변경을 `/api/users` JSON API로 분리했다. 화면은 `frontend/src/user` 모듈에서 렌더링하고 공통 `AppLayout`을 사용한다.
+- 해결: 해당 `.do` GET 요청은 모두 동일한 React 셸로 연결하고, 조회·등록·수정·삭제·비밀번호 변경을 `/api/users` JSON API로 분리했다. 화면은 `frontend/src/user` 모듈에서 렌더링하고 공통 `AppLayout`을 사용한다.
 - 보안: `/api/users/me`와 비밀번호 변경은 로그인 사용자에게, 나머지 사원관리 API는 관리자에게만 허용한다. 비밀번호 해시는 JSON 응답에 포함하지 않는다.
 - 검증: 일반 사용자의 관리자 API 403, 본인 API 접근, 관리자 CRUD, BCrypt 비밀번호 변경을 통합 테스트에 포함했다.
 
@@ -386,6 +386,12 @@ MySQL
 - 증상: `App.jsx`와 `FrontendApiController`에 화면 및 도메인 API가 계속 누적됐다.
 - 원인: React 전환 초기에는 빠른 검증을 위해 하나의 파일에 라우팅과 화면을 모았다.
 - 해결: 프론트는 `layout`, `approval`, `notice`, `user`, `messenger`, `ai`로 나누고 `App.jsx`는 라우팅 조합만 담당하게 했다. 백엔드는 `DashboardApiController`, `ApprovalApiController`, `NoticeApiController`, `UserApiController`로 분리하고 기존 Service·Mapper를 그대로 재사용했다.
+
+### 4.21 마지막 JSP 제거 후 로그인 CSRF 처리
+
+- 증상: `app.jsp`와 `login.jsp`를 정적 React 셸로 교체하면 JSP meta·hidden input에서 읽던 CSRF 토큰이 사라져 로그인과 통합 테스트가 실패한다.
+- 원인: 화면 전환은 완료됐지만 CSRF 공급 경로가 서버 렌더링 HTML에 남아 있었다.
+- 해결: 랜딩·로그인·업무 URL을 Vite의 `index.html`로 전달하고, 브라우저와 테스트가 이미 제공 중인 `GET /api/session` 응답에서 CSRF parameter·header·token을 읽도록 통일했다. Jasper·JSTL과 ViewResolver 설정도 함께 제거했다.
 
 ## 5. 포트폴리오에 사용할 수 있는 검증된 성과
 

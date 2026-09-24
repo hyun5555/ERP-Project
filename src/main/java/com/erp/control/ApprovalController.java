@@ -39,18 +39,18 @@ public class ApprovalController {
 
 	@GetMapping("/approval/list.do")
 	public String approvalList() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@GetMapping("/approval/recv.do")
 	public String approvalRecv() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@GetMapping("/approval/view.do")
 	public String approvalView(@RequestParam int approval_no, HttpSession session) {
 		approvalService.getAccessibleApproval(approval_no, loginUser(session).getUsernum());
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@PostMapping("/approval/delete.do")
@@ -95,7 +95,7 @@ public class ApprovalController {
 
 	@GetMapping("/approval/write.do")
 	public String approvalWrite() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@PostMapping("/approval/write.do")
@@ -118,7 +118,7 @@ public class ApprovalController {
 	public String approvalModify(@RequestParam int approval_no,
 			HttpSession session) {
 		approvalService.getEditableApproval(approval_no, loginUser(session).getUsernum());
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@PostMapping("/approval/modify.do")
@@ -140,7 +140,7 @@ public class ApprovalController {
 
 	@GetMapping("/approval/allok.do")
 	public String approvalAllok() {
-		return "app";
+		return "forward:/resources/app/index.html";
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)

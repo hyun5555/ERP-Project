@@ -34,11 +34,3 @@ async function errorMessage(response, fallback) {
 export function currentRoute() {
   return { path: window.location.pathname, search: window.location.search }
 }
-
-export function csrfFromMeta() {
-  return {
-    parameterName: document.querySelector('meta[name="csrf-parameter"]')?.content || '_csrf',
-    headerName: document.querySelector('meta[name="csrf-header"]')?.content || 'X-CSRF-TOKEN',
-    token: document.querySelector('meta[name="csrf-token"]')?.content || ''
-  }
-}
