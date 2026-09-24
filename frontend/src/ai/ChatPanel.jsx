@@ -17,7 +17,7 @@ export function ChatPanel({ close, csrf }) {
   const endRef = useRef(null)
 
   useEffect(() => () => abortRef.current?.abort(), [])
-  useEffect(() => endRef.current?.scrollIntoView({ block: 'end' }), [messages])
+  useEffect(() => { endRef.current?.scrollIntoView({ block: 'end' }) }, [messages])
 
   async function submit(event) {
     event.preventDefault()

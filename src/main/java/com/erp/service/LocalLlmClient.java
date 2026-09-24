@@ -24,11 +24,13 @@ public class LocalLlmClient {
 	private final HttpClient httpClient;
 	private final URI generateUri;
 	private final String model;
+	private final boolean think;
 	private final Duration timeout;
 
 	public LocalLlmClient(JsonMapper jsonMapper,
 			@Value("${erp.ai.base-url:http://localhost:11434}") String baseUrl,
 			@Value("${erp.ai.model:qwen3:4b}") String model,
+			@Value("${erp.ai.think:false}") boolean think,
 			@Value("${erp.ai.timeout-seconds:60}") long timeoutSeconds) {
 		this.jsonMapper = jsonMapper;
 		this.httpClient = HttpClient.newBuilder()
@@ -36,6 +38,7 @@ public class LocalLlmClient {
 				.build();
 		this.generateUri = URI.create(baseUrl.replaceAll("/+$", "") + "/api/generate");
 		this.model = model;
+		this.think = think;
 		this.timeout = Duration.ofSeconds(timeoutSeconds);
 	}
 
@@ -48,6 +51,7 @@ public class LocalLlmClient {
 				"model", model,
 				"prompt", prompt,
 				"stream", true,
+				"think", think,
 				"options", Map.of("temperature", 0.2)));
 		HttpRequest request = HttpRequest.newBuilder(generateUri)
 				.timeout(timeout)
