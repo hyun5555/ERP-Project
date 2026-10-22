@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.erp.service.LoginService;
 import com.erp.service.UserService;
@@ -118,6 +119,12 @@ public class UserApiController {
 	public ResponseEntity<Map<String, String>> badRequest(IllegalArgumentException exception) {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 				.body(Map.of("message", exception.getMessage()));
+	}
+
+	@ExceptionHandler(ResponseStatusException.class)
+	public ResponseEntity<Map<String, String>> statusError(ResponseStatusException exception) {
+		return ResponseEntity.status(exception.getStatusCode()).body(Map.of("message",
+				exception.getReason() == null ? "요청을 처리하지 못했습니다." : exception.getReason()));
 	}
 
 	private static userVO loginUser(HttpSession session) {

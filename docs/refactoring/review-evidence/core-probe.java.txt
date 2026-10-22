@@ -1,0 +1,78 @@
+
+	// Temporary observational probe: insecure results are evidence, not acceptance criteria.
+	@Test
+	void stage56ReviewProbe() throws Exception {
+		var json = new tools.jackson.databind.json.JsonMapper();
+		Map<String, Object> observations = new LinkedHashMap<>();
+		HttpClient admin = authenticatedClient("admin");
+		String prefix = "review-" + UUID.randomUUID().toString().substring(0, 8);
+		String elevated = prefix + "-admin";
+		String target = prefix + "-target";
+		String secondAuthor = prefix + "-author";
+		String payload = employeeRegistration(elevated, prefix).replace("Initial-1234!", "1234").replace("\"authority\":false", "\"authority\":true");
+		assertThat(sendJson(admin, "POST", "/api/users", payload).statusCode()).isEqualTo(200);
+		HttpClient cachedAdmin = authenticatedClient(elevated);
+		String demoted = payload.replace("\"userpw\":\"1234\"", "\"userpw\":\"\"").replace("\"authority\":true", "\"authority\":false");
+		assertThat(sendJson(admin, "PUT", "/api/users/" + elevated, demoted).statusCode()).isEqualTo(200);
+		observations.put("demotedDatabaseAuthority", loginMapper.findByUsernum(elevated).isAuthority());
+		observations.put("demotedExistingSessionAdminApiStatus", get(cachedAdmin, "/api/users").statusCode());
+		HttpClient freshDemoted = authenticatedClient(elevated);
+		observations.put("demotedNewSessionAdminApiStatus", get(freshDemoted, "/api/users").statusCode());
+		String targetPayload = employeeRegistration(target, prefix).replace("Initial-1234!", "1234");
+		observations.put("demotedExistingSessionCreateUserStatus", sendJson(cachedAdmin, "POST", "/api/users", targetPayload).statusCode());
+		assertThat(loginMapper.findByUsernum(target)).isNotNull();
+		assertThat(sendJson(admin, "PUT", "/api/users/" + elevated, demoted.replace("재직", "퇴직")).statusCode()).isEqualTo(200);
+		observations.put("retiredExistingSessionAdminApiStatus", get(cachedAdmin, "/api/users").statusCode());
+		observations.put("retiredNewLoginStatus", login(newClient(), elevated, "1234").statusCode());
+
+		String selfTitle = uniqueTitle(prefix + "-self");
+		HttpClient author = authenticatedClient("2005004");
+		HttpResponse<String> selfCreated = postForm(author, "/approval/write.do", Map.of("kind", "기안서", "approval_title", selfTitle,
+				"approval_content", "본인 결재 서버 검증", "approval_target", "2005004"));
+		observations.put("selfApprovalCreateStatus", selfCreated.statusCode());
+		assertThat(selfCreated.statusCode()).isEqualTo(302);
+		int selfNo = jdbcTemplate.queryForObject("select approval_no from approval where approval_title = ?", Integer.class, selfTitle);
+		observations.put("selfApprovalDecisionStatus", decide(author, selfNo, "승인", "본인 승인").statusCode());
+		observations.put("selfApprovedDocumentStatus", approvalService.getApproval(selfNo).getDocument_status());
+
+		int deletionNo = createDraft(prefix + "-delete-step", "2005004", List.of(target, "2005003"));
+		observations.put("pendingApproverDeleteStatus", sendJson(admin, "DELETE", "/api/users/" + target, "{}").statusCode());
+		observations.put("approvalTargetsAfterDelete", approvalService.getLines(deletionNo).stream().map(approval_line_VO::getApproval_target).toList());
+		observations.put("secondApproverDecisionAfterDeleteStatus", decide(authenticatedClient("2005003"), deletionNo, "승인", "삭제 후 순서 우회").statusCode());
+		observations.put("documentAfterSkippedDeletedApprover", approvalService.getApproval(deletionNo).getDocument_status());
+		String authorPayload = employeeRegistration(secondAuthor, prefix).replace("Initial-1234!", "1234");
+		assertThat(sendJson(admin, "POST", "/api/users", authorPayload).statusCode()).isEqualTo(200);
+		int historyNo = createDraft(prefix + "-history", secondAuthor, List.of("2005003"));
+		approvalService.processApproval(historyNo, "2005003", "승인", "완료 이력");
+		assertThat(sendJson(admin, "DELETE", "/api/users/" + secondAuthor, "{}").statusCode()).isEqualTo(200);
+		observations.put("completedDocumentCountAfterAuthorDeletion", jdbcTemplate.queryForObject("select count(*) from approval where approval_no = ?", Integer.class, historyNo));
+
+		String developer = prefix + "-dev";
+		String designer = prefix + "-design";
+		for (String id : List.of(developer, designer)) {
+			String body = employeeRegistration(id, prefix).replace("Initial-1234!", "1234");
+			if (id.equals(designer)) body = body.replace("개발", "디자인");
+			assertThat(sendJson(admin, "POST", "/api/users", body).statusCode()).isEqualTo(200);
+			int number = createDraft(prefix + "-filter", id, List.of("2005003"));
+			approvalService.processApproval(number, "2005003", "승인", "완료");
+		}
+		var completed = json.readTree(get(admin, "/api/approvals/completed?team=" + encode("개발") + "&keyword=" + encode(prefix + "-filter")).body());
+		observations.put("completedTeamFilteredItems", completed.get("items").size());
+		observations.put("completedTeamFilteredTotalCount", completed.get("totalCount").asInt());
+		for (String path : List.of("/api/users", "/api/notices", "/api/approvals")) {
+			observations.put("overflowPageStatus:" + path, get(admin, path + "?page=2147483647").statusCode());
+		}
+		String spaces = employeeRegistration(developer, prefix).replace("Initial-1234!", "   ");
+		observations.put("blankPasswordUpdateStatus", sendJson(admin, "PUT", "/api/users/" + developer, spaces).statusCode());
+		observations.put("blankPasswordStoredUnencoded", loginMapper.findByUsernum(developer).getUserpw().isBlank());
+		observations.put("originalPasswordLoginAfterBlankUpdateStatus", login(newClient(), developer, "1234").statusCode());
+
+		ProcessBuilder benchmark = new ProcessBuilder("bash", "scripts/benchmark.sh", "review-probe").redirectErrorStream(true);
+		benchmark.environment().put("BENCHMARK_BASE_URL", "http://localhost:" + port + "/ERP");
+		benchmark.environment().put("BENCHMARK_REQUESTS", "1");
+		Process process = benchmark.start();
+		assertThat(process.waitFor(10, TimeUnit.SECONDS)).isTrue();
+		observations.put("legacyBenchmarkExit", process.exitValue());
+		observations.put("legacyBenchmarkOutput", new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8).trim());
+		System.out.println("STAGE56_CORE_OBSERVATIONS=" + json.writeValueAsString(observations));
+	}

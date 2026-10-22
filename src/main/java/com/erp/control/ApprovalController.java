@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.erp.service.ApprovalService;
+import com.erp.service.AttachmentStorage;
 import com.erp.vo.approvalVO;
 import com.erp.vo.approval_file_VO;
 import com.erp.vo.userVO;
@@ -30,10 +30,12 @@ public class ApprovalController {
 
 	private final ApprovalService approvalService;
 	private final Path uploadDirectory;
+	private final AttachmentStorage attachments;
 
-	public ApprovalController(ApprovalService approvalService,
+	public ApprovalController(ApprovalService approvalService, AttachmentStorage attachments,
 			@Value("${erp.upload-dir}") String uploadDirectory) {
 		this.approvalService = approvalService;
+		this.attachments = attachments;
 		this.uploadDirectory = Path.of(uploadDirectory).toAbsolutePath().normalize();
 	}
 
@@ -151,26 +153,17 @@ public class ApprovalController {
 	}
 
 	private List<approval_file_VO> store(MultipartFile attachment) throws IOException {
-		if (attachment == null || attachment.isEmpty()) {
-			return List.of();
-		}
-		Files.createDirectories(uploadDirectory);
-		String savedName = UUID.randomUUID().toString();
-		attachment.transferTo(uploadDirectory.resolve(savedName));
-
+		AttachmentStorage.StoredFile stored = attachments.store(attachment);
+		if (stored == null) return List.of();
 		approval_file_VO file = new approval_file_VO();
-		file.setAfname(attachment.getOriginalFilename());
-		file.setApname(savedName);
+		file.setAfname(stored.originalName());
+		file.setApname(stored.storedName());
 		return List.of(file);
 	}
 
 	private void deleteStored(List<approval_file_VO> files) {
 		for (approval_file_VO file : files) {
-			try {
-				Files.deleteIfExists(uploadDirectory.resolve(file.getApname()));
-			} catch (IOException ignored) {
-				// DB rollback is complete; an orphaned upload can be removed by maintenance.
-			}
+			attachments.deleteIfUnreferenced(file.getApname());
 		}
 	}
 

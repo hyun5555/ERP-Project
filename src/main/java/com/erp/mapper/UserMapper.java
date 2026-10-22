@@ -19,7 +19,21 @@ public interface UserMapper {
 
 	userVO selectUser(String usernum);
 
-	String nextUsernum(@Param("year") String year);
+	userVO selectUserForUpdate(String usernum);
+
+	List<userVO> selectUsersForUpdate(@Param("usernums") List<String> usernums);
+
+	boolean hasBusinessReferences(String usernum);
+
+	int nextUserNumber(@Param("year") String year);
+
+	int ensureUserNumberSequence(@Param("year") String year);
+
+	int selectUserNumberForUpdate(@Param("year") String year);
+
+	String selectLastUsernum(@Param("year") String year);
+
+	int updateUserNumberSequence(@Param("year") String year, @Param("number") int number);
 
 	int updateUser(userVO user);
 

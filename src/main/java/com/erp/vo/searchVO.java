@@ -31,8 +31,8 @@ public class searchVO
 	public void setLevel(String level)             {this.level = level;	             }
 	public void setUser_status(String user_status) {this.user_status = user_status;	 }
 	public void setPageno(int pageno) {
-		this.pageno = pageno;
-		this.offset = (this.pageno - 1) * 10;
+		this.pageno = Math.max(pageno, 1);
+		this.offset = com.erp.util.WebUtil.pageOffset(this.pageno, 10);
 	}
 }
 

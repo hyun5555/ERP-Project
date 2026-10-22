@@ -1,0 +1,1 @@
+{"http_timeout_seconds":10,"http_cases":11,"planned_http_samples":9900,"vm":"OpenJDK 64-Bit Server VM","java":"21.0.12.1+1-LTS","stomp_deadline_seconds":5,"mysql":"8.4.11"}

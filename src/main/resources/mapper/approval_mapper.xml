@@ -66,7 +66,7 @@
 	<select id="lineApproval" parameterType="com.erp.vo.userVO" resultType="com.erp.vo.userVO">
 		select usernum,name,team,level
 		from user 
-		where authority = false and usernum != #{usernum}
+		where authority = false and user_status = '재직' and usernum != #{usernum}
 		order by field (team,null,'개발','디자인','경영지원'), level asc;	
 	</select>
 	<!-- ============================================================== -->
@@ -118,6 +118,13 @@
 		    a.approval_no = #{approval_no}
 	</select>
 
+	<select id="selectApprovalForUpdate" parameterType="int" resultType="com.erp.vo.approvalVO">
+		SELECT approval_no, usernum, document_status
+		FROM approval
+		WHERE approval_no = #{approval_no}
+		FOR UPDATE
+	</select>
+
 	<select id="selectApprovalDetailForUser" resultMap="approvalDetailMap">
 		SELECT
 			a.approval_no, a.kind, a.writedate, a.approval_title, a.approval_content,
@@ -165,6 +172,14 @@
 	<!-- ============================================================== -->
 	<!-- 3. 결재 처리 (View에서 승인/반려 시) 관련                        -->
 	<!-- ============================================================== -->
+	<select id="selectApprovalLinesForUpdate" parameterType="int" resultType="com.erp.vo.approval_line_VO">
+		SELECT approval_no, approval_target, approval_status, approval_sort, approval_date, comment
+		FROM approval_line
+		WHERE approval_no = #{approval_no}
+		ORDER BY approval_sort ASC
+		FOR UPDATE
+	</select>
+
 	<update id="updateApprovalLineStatus" parameterType="com.erp.vo.approval_line_VO">
 		UPDATE approval_line
 		SET approval_status = #{approval_status}, approval_date = CURRENT_TIMESTAMP, comment = #{comment}
@@ -289,9 +304,9 @@
 		LIMIT #{offset}, #{limit}
 	</select>
 
-	<select id="selectPendingForApprover" resultMap="approvalListMap">
+	<select id="selectPendingForApprover" resultMap="approvalDetailMap">
 		SELECT
-			a.approval_no, a.kind, a.approval_title, a.writedate, a.document_status,
+			a.approval_no, a.kind, a.approval_title, a.approval_content, a.writedate, a.document_status,
 			a.usernum,
 			u.usernum AS drafter_usernum,
 			u.name AS drafter_name,
@@ -302,6 +317,15 @@
 		LEFT JOIN user u ON a.usernum = u.usernum
 		WHERE al.approval_target = #{usernum}
 		AND al.approval_status = '대기'
+		AND a.document_status IN ('대기중', '진행중')
+		<if test="approvalNo != null">AND a.approval_no = #{approvalNo}</if>
+		<if test="title != null and title != ''">AND INSTR(a.approval_title, #{title}) &gt; 0</if>
+		AND NOT EXISTS (
+			SELECT 1 FROM approval_line previous
+			WHERE previous.approval_no = al.approval_no
+			AND previous.approval_sort &lt; al.approval_sort
+			AND (previous.approval_status IS NULL OR previous.approval_status != '승인')
+		)
 		ORDER BY a.approval_no DESC
 		LIMIT #{limit}
 	</select>
@@ -340,6 +364,7 @@
 	<select id="selectListAllCount" parameterType="map" resultType="int">
 		SELECT COUNT(*)
 		FROM approval a
+		LEFT JOIN user u ON a.usernum = u.usernum
 		WHERE a.approval_no IN (
 			SELECT al.approval_no
 			FROM approval_line al
@@ -353,6 +378,9 @@
 		</if>
 		<if test="keyword != null and keyword != ''">
 			AND a.approval_title LIKE CONCAT('%', #{keyword}, '%')
+		</if>
+		<if test="team != null and team != ''">
+			AND u.team = #{team}
 		</if>
 	</select>
 	

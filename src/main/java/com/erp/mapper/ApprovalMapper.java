@@ -24,12 +24,16 @@ public interface ApprovalMapper {
 
 	approvalVO selectApprovalDetail(int approvalNo);
 
+	approvalVO selectApprovalForUpdate(int approvalNo);
+
 	approvalVO selectApprovalDetailForUser(
 			@Param("approvalNo") int approvalNo, @Param("usernum") String usernum);
 
 	List<approval_file_VO> selectApprovalFiles(int approvalNo);
 
 	List<approval_line_VO> selectApprovalLines(int approvalNo);
+
+	List<approval_line_VO> selectApprovalLinesForUpdate(int approvalNo);
 
 	int updateApprovalLineStatus(approval_line_VO line);
 
@@ -50,7 +54,8 @@ public interface ApprovalMapper {
 	List<approvalVO> selectRecvApprovalList(Map<String, Object> params);
 
 	List<approvalVO> selectPendingForApprover(
-			@Param("usernum") String usernum, @Param("limit") int limit);
+			@Param("usernum") String usernum, @Param("limit") int limit,
+			@Param("approvalNo") Integer approvalNo, @Param("title") String title);
 
 	int countRecvApprovalList(Map<String, Object> params);
 

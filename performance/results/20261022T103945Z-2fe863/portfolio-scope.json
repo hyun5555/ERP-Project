@@ -1,0 +1,13 @@
+{
+  "selected_size": 1000,
+  "larger_runs_stopped_at_user_request": true,
+  "performance_environments_stopped": [
+    "performance-e6c6ff80-1000",
+    "performance-04522e0e-10000",
+    "performance-47d085ef-100000",
+    "performance-20261022T103807Z-35041c-1000"
+  ],
+  "native_source_running": true,
+  "native_source_rows_schema_uploads_unchanged": true,
+  "terminated_remaining_test_processes": []
+}

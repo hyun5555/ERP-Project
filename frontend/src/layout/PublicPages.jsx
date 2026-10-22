@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BASE } from '../api'
+import { BASE, getJson } from '../api'
 import { Icon } from '../ui'
 
 export function LandingPage({ authenticated }) {
@@ -52,6 +52,7 @@ export function LandingPage({ authenticated }) {
 }
 
 export function LoginPage({ csrf }) {
+  const [loginCsrf, setLoginCsrf] = useState(csrf)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -61,15 +62,23 @@ export function LoginPage({ csrf }) {
     const body = new URLSearchParams()
     body.set('usernum', form.get('usernum'))
     body.set('userpw', form.get('userpw'))
-    body.set(csrf.parameterName, csrf.token)
+    body.set(loginCsrf.parameterName, loginCsrf.token)
     setLoading(true)
     setError('')
     try {
       const response = await fetch(`${BASE}/login/login.do`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body })
+      if (response.status === 403) {
+        const session = await getJson('/api/session')
+        setLoginCsrf(session.csrf)
+        if (session.authenticated) window.location.replace(`${BASE}/main.do`)
+        else setError('로그인 보안 정보가 갱신되었습니다. 다시 로그인해 주세요.')
+        return
+      }
       const result = (await response.text()).trim()
-      if (result === 'OK') window.location.replace(`${BASE}/main.do`)
-      else if (result === 'CHANGE') window.location.replace(`${BASE}/login/changepw.do`)
-      else setError('사원번호 또는 비밀번호를 확인해 주세요.')
+      if (response.ok && result === 'OK') window.location.replace(`${BASE}/main.do`)
+      else if (response.ok && result === 'CHANGE') window.location.replace(`${BASE}/login/changepw.do`)
+      else if (response.status === 401) setError('사원번호 또는 비밀번호를 확인해 주세요.')
+      else setError('로그인 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.')
     } catch {
       setError('서버에 연결할 수 없습니다. 잠시 후 다시 시도해 주세요.')
     } finally {

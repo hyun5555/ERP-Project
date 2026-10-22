@@ -1,0 +1,62 @@
+{
+  "backend_observations": {
+    "demotedDatabaseAuthority": false,
+    "demotedExistingSessionAdminApiStatus": 200,
+    "demotedNewSessionAdminApiStatus": 403,
+    "demotedExistingSessionCreateUserStatus": 200,
+    "retiredExistingSessionAdminApiStatus": 200,
+    "retiredNewLoginStatus": 401,
+    "selfApprovalCreateStatus": 302,
+    "selfApprovalDecisionStatus": 302,
+    "selfApprovedDocumentStatus": "승인",
+    "pendingApproverDeleteStatus": 200,
+    "approvalTargetsAfterDelete": [
+      "2005003"
+    ],
+    "secondApproverDecisionAfterDeleteStatus": 302,
+    "documentAfterSkippedDeletedApprover": "승인",
+    "completedDocumentCountAfterAuthorDeletion": 0,
+    "completedTeamFilteredItems": 1,
+    "completedTeamFilteredTotalCount": 2,
+    "overflowPageStatus:/api/users": 500,
+    "overflowPageStatus:/api/notices": 500,
+    "overflowPageStatus:/api/approvals": 500,
+    "blankPasswordUpdateStatus": 200,
+    "blankPasswordStoredUnencoded": true,
+    "originalPasswordLoginAfterBlankUpdateStatus": 401,
+    "legacyBenchmarkExit": 1,
+    "legacyBenchmarkOutput": "로그인 화면에서 CSRF 토큰을 찾지 못했습니다."
+  },
+  "browser_observations": {
+    "passwordApiStatus": 200,
+    "successVisible": true,
+    "errors": [
+      "Cannot read properties of null (reading 'reset')"
+    ],
+    "passwordFieldRetained": true,
+    "restoredStatus": 200
+  },
+  "native_websocket_observations": {
+    "logoutStatus": 302,
+    "httpAuthenticatedAfterLogout": false,
+    "closureCode": 1008,
+    "storedAfterLogout": false
+  },
+  "date": "2026-10-06",
+  "regression": {
+    "command": "./mvnw --batch-mode verify",
+    "tests_run": 57,
+    "passed": 56,
+    "skipped_optional_model_evaluation": 1,
+    "failures": 0,
+    "errors": 0,
+    "war_packaged": true,
+    "node_tests_passed": 7,
+    "frontend_build_passed": true
+  },
+  "probe_notes": {
+    "backend": "Temporary observational methods, isolated Testcontainers DB, run before native-only request; source restored byte-for-byte. Successful observation is not a secure acceptance result.",
+    "websocket_initial_hypothesis": "Initial probe ended with Connection closed; hypothesis withdrawn. Native browser verifies code 1008 and no message persistence.",
+    "browser": "One successful core user flow plus password observation and native WebSocket logout probe. Password UI bug observed, not fixed; test validates observation infrastructure."
+  }
+}

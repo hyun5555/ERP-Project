@@ -11,11 +11,15 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
 
 import com.erp.service.ChatService;
 import com.erp.vo.ChatMessageVO;
@@ -60,13 +64,14 @@ public class ChatController {
 	}
 
 	@PostMapping("/rooms/{roomNo}/read")
-	public Map<String, Integer> read(@PathVariable long roomNo, Principal principal) {
+	public Map<String, Integer> read(@PathVariable long roomNo,
+			@RequestParam(required = false) Long throughMessageNo, Principal principal) {
 		String reader = principal.getName();
 		String sender = chatService.getOtherParticipant(roomNo, reader);
-		int count = chatService.markRead(roomNo, reader);
+		int count = chatService.markRead(roomNo, reader, throughMessageNo);
 		if (count > 0) {
 			messagingTemplate.convertAndSendToUser(sender, "/queue/read",
-					new ReadReceipt(roomNo, reader, LocalDateTime.now().format(DATE_TIME)));
+					new ReadReceipt(roomNo, reader, LocalDateTime.now().format(DATE_TIME), throughMessageNo));
 		}
 		return Map.of("updated", count);
 	}
@@ -80,6 +85,13 @@ public class ChatController {
 		messagingTemplate.convertAndSendToUser(recipient, "/queue/messages", message);
 	}
 
+	@MessageMapping("/chat.sync")
+	@SendToUser(value = "/queue/sync", broadcast = false)
+	public Map<String, Boolean> sync() {
+		// Ordered inbound processing completes earlier SUBSCRIBE frames before this response.
+		return Map.of("ready", true);
+	}
+
 	@MessageExceptionHandler
 	@SendToUser("/queue/errors")
 	public Map<String, String> messageError(Exception exception) {
@@ -89,8 +101,15 @@ public class ChatController {
 	}
 
 	public record OpenRoomRequest(String partnerUsernum) {}
+
+	@ExceptionHandler(IllegalArgumentException.class)
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public Map<String, String> badRequest(IllegalArgumentException exception) {
+		return Map.of("message", exception.getMessage());
+	}
+
 	public record SendMessageRequest(long roomNo, String content) {}
-	public record ReadReceipt(long roomNo, String readerUsernum, String readAt) {}
+	public record ReadReceipt(long roomNo, String readerUsernum, String readAt, Long throughMessageNo) {}
 	public record ContactResponse(String usernum, String name, String team, String level) {
 		static ContactResponse from(userVO user) {
 			return new ContactResponse(user.getUsernum(), user.getName(), user.getTeam(), user.getLevel());

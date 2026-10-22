@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.erp.service.ApprovalService;
+import com.erp.util.WebUtil;
 import com.erp.vo.approvalVO;
 import com.erp.vo.approval_file_VO;
 import com.erp.vo.approval_line_VO;
@@ -91,8 +92,7 @@ public class ApprovalApiController {
 		List<approval_line_VO> lines = approvalService.getLines(approvalNo);
 		boolean owner = user.getUsernum().equals(approval.getUsernum());
 		boolean editable = owner && List.of("대기중", "반려").contains(approval.getDocument_status());
-		boolean approver = lines.stream().anyMatch(line -> user.getUsernum().equals(line.getApproval_target())
-				&& "대기".equals(line.getApproval_status()));
+		boolean approver = approvalService.canApprove(approval, lines, user.getUsernum());
 
 		return new ApprovalDetailResponse(
 				ApprovalDetail.from(approval),
@@ -111,7 +111,7 @@ public class ApprovalApiController {
 		params.put("kind", "문서구분".equals(kind) ? "" : kind);
 		params.put("status", status);
 		params.put("keyword", keyword);
-		params.put("offset", (page - 1) * PAGE_SIZE);
+		params.put("offset", WebUtil.pageOffset(page, PAGE_SIZE));
 		params.put("limit", PAGE_SIZE);
 		return params;
 	}

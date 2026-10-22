@@ -1,0 +1,18 @@
+
+	@Test
+	void stage56LogoutProbe() throws Exception {
+		long room = chatService.openRoom("admin", "2005004");
+		try (Peer peer = login("2005004")) {
+			peer.connect(peer.csrfHeaders()).get(5, TimeUnit.SECONDS);
+			peer.subscribe("/user/queue/messages");
+			peer.ready();
+			int logoutStatus = peer.request("POST", "/login/logout.do", "{}").statusCode();
+			boolean httpAuthenticated = json.readTree(peer.request("GET", "/api/session", null).body()).get("authenticated").asBoolean();
+			String content = "after-logout-" + System.nanoTime();
+			peer.send("/app/chat.send", Map.of("roomNo", room, "content", content));
+			boolean received = peer.nextMessage().get("content").asString().equals(content);
+			boolean stored = chatService.getMessages(room, "admin").stream().anyMatch(m -> content.equals(m.getContent()));
+			System.out.println("STAGE56_WS_OBSERVATIONS=" + json.writeValueAsString(Map.of("logoutStatus", logoutStatus,
+					"httpAuthenticatedAfterLogout", httpAuthenticated, "receivedAfterLogout", received, "storedAfterLogout", stored)));
+		}
+	}

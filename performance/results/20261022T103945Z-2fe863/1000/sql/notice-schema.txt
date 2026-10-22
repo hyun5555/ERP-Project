@@ -1,0 +1,17 @@
+CREATE TABLE `notice` (
+  `notice_no` int NOT NULL AUTO_INCREMENT,
+  `notice_title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `notice_content` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_important` tinyint(1) NOT NULL DEFAULT '0',
+  `is_main` tinyint(1) NOT NULL DEFAULT '0',
+  `pname` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `fname` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `noticedate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `usernum` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`notice_no`),
+  KEY `fk_notice_user` (`usernum`),
+  CONSTRAINT `fk_notice_user` FOREIGN KEY (`usernum`) REFERENCES `user` (`usernum`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=1001000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+INDEXES
+[notice, 0, PRIMARY, 1, notice_no, A, 969, null, null, , BTREE, , , YES, null]
+[notice, 1, fk_notice_user, 1, usernum, A, 1, null, null, YES, BTREE, , , YES, null]

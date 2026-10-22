@@ -21,6 +21,29 @@
 		WHERE usernum = #{usernum}
 	</select>
 
+	<select id="selectUserForUpdate" resultType="com.erp.vo.userVO" flushCache="true" useCache="false">
+		SELECT usernum, name, idnum1, idnum2, phonenum, officenum, email,
+			team, level, joindate, authority, firstlogin, user_status, level_num
+		FROM user WHERE usernum = #{usernum} FOR UPDATE
+	</select>
+
+	<select id="selectUsersForUpdate" resultType="com.erp.vo.userVO" flushCache="true" useCache="false">
+		SELECT usernum, name, authority, user_status
+		FROM user WHERE usernum IN
+		<foreach collection="usernums" item="usernum" open="(" separator="," close=")">
+			#{usernum}
+		</foreach>
+		ORDER BY usernum FOR UPDATE
+	</select>
+
+	<select id="hasBusinessReferences" resultType="boolean">
+		SELECT EXISTS(SELECT 1 FROM approval WHERE usernum = #{usernum})
+			OR EXISTS(SELECT 1 FROM approval_line WHERE approval_target = #{usernum})
+			OR EXISTS(SELECT 1 FROM notice WHERE usernum = #{usernum})
+			OR EXISTS(SELECT 1 FROM chat_room WHERE user_a = #{usernum} OR user_b = #{usernum})
+			OR EXISTS(SELECT 1 FROM chat_message WHERE sender_usernum = #{usernum})
+	</select>
+
 	<select id="selectUsers" parameterType="com.erp.vo.searchVO" resultType="com.erp.vo.userVO">
 		SELECT usernum, name, officenum, email, team, level, user_status
 		FROM user
@@ -44,7 +67,7 @@
 				</when>
 			</choose>
 		</if>
-		ORDER BY FIELD(team, '임원', '개발', '경영지원', '디자인'), level_num
+		ORDER BY FIELD(team, '임원', '개발', '경영지원', '디자인'), level_num, usernum
 		LIMIT #{offset}, 10
 	</select>
 
@@ -72,13 +95,35 @@
 		</if>
 	</select>
 
-	<select id="nextUsernum" resultType="string">
-		SELECT CONCAT(#{year}, LPAD(
-			COALESCE(MAX(CAST(SUBSTRING(usernum, 5) AS UNSIGNED)), 0) + 1, 3, '0'))
+	<select id="nextUserNumber" resultType="int">
+		SELECT GREATEST(
+			COALESCE((SELECT last_number FROM user_number_sequence WHERE number_year = #{year}), 0),
+			COALESCE(MAX(CAST(SUBSTRING(usernum, 5) AS UNSIGNED)), 0)) + 1
 		FROM user
 		WHERE usernum LIKE CONCAT(#{year}, '%')
-		AND CHAR_LENGTH(usernum) = 7
+		AND usernum REGEXP '^[0-9]{7}$'
 	</select>
+
+	<insert id="ensureUserNumberSequence">
+		INSERT INTO user_number_sequence (number_year, last_number) VALUES (#{year}, 0)
+		ON DUPLICATE KEY UPDATE last_number = last_number
+	</insert>
+
+	<select id="selectUserNumberForUpdate" resultType="int">
+		SELECT last_number FROM user_number_sequence
+		WHERE number_year = #{year}
+		FOR UPDATE
+	</select>
+
+	<select id="selectLastUsernum" resultType="string">
+		SELECT usernum FROM user
+		WHERE usernum LIKE CONCAT(#{year}, '%') AND usernum REGEXP '^[0-9]{7}$'
+		ORDER BY usernum DESC LIMIT 1
+	</select>
+
+	<update id="updateUserNumberSequence">
+		UPDATE user_number_sequence SET last_number = #{number} WHERE number_year = #{year}
+	</update>
 
 	<update id="updateUser" parameterType="com.erp.vo.userVO">
 		UPDATE user SET

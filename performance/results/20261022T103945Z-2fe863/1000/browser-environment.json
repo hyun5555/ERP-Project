@@ -1,0 +1,27 @@
+{
+  "chromium": "153.0.8010.12",
+  "node": "v26.7.0",
+  "playwright": "1.63.0",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "headless": true,
+  "workers": 1,
+  "retries": 0,
+  "observation_window": "navigation start through fixture-backed DOM readiness and next rAF; duration varies by case",
+  "browser_cache": "cold=new context after API login; warm=same context second navigation",
+  "os_db_cache": "not cleared",
+  "read_state": "seed read flags restored before each repeat; history warmup marks visible history read before measured history visits",
+  "samples_per_case_per_cache_per_repeat": 10,
+  "planned_samples": 360,
+  "warmups": 1,
+  "cases": [
+    "home",
+    "notices",
+    "notice-search",
+    "completed",
+    "detail",
+    "history"
+  ]
+}

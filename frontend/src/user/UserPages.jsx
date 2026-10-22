@@ -122,9 +122,11 @@ export function UserForm({ route, navigate, csrf, edit = false }) {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    getJson(edit ? `/api/users/${usernum}` : '/api/users/next-number')
-      .then((data) => setUser(edit ? data : { usernum: data.usernum, authority: false, userStatus: '재직' }))
-      .catch((reason) => setError(reason.message))
+    if (!edit) {
+      setUser({ authority: false, userStatus: '재직' })
+      return
+    }
+    getJson(`/api/users/${usernum}`).then(setUser).catch((reason) => setError(reason.message))
   }, [edit, usernum])
 
   async function submit(event) {
@@ -151,7 +153,7 @@ export function UserForm({ route, navigate, csrf, edit = false }) {
       <section className="page-heading"><div><p className="page-kicker">EMPLOYEE FORM</p><h1>{edit ? '사원 정보 수정' : '사원 등록'}</h1><p className="muted">업무에 필요한 사원 정보를 정확하게 입력해 주세요.</p></div></section>
       {error && <div className="alert" role="alert">{error}</div>}
       <form className="surface workspace-form user-form" onSubmit={submit}>
-        <div className="form-grid three"><label>사원명<input name="name" defaultValue={user.name || ''} autoFocus required/></label><label>사원번호<input name="usernum" defaultValue={user.usernum} readOnly={edit} required/></label><label>{edit ? '새 비밀번호 (변경 시 입력)' : '초기 비밀번호'}<input type="password" name="userpw" autoComplete="new-password" required={!edit}/></label></div>
+        <div className="form-grid three"><label>사원명<input name="name" defaultValue={user.name || ''} autoFocus required/></label><label>사원번호<input name={edit ? 'usernum' : undefined} value={edit ? user.usernum : '등록 시 자동 발급'} readOnly/></label><label>{edit ? '새 비밀번호 (변경 시 입력)' : '초기 비밀번호'}<input type="password" name="userpw" autoComplete="new-password" required={!edit}/></label></div>
         <div className="form-grid three"><label>주민번호 앞자리<input name="idnum1" defaultValue={user.idnum1 || ''} inputMode="numeric" pattern="[0-9]{6}" maxLength="6" required/></label><label>주민번호 뒷자리 첫 숫자<input name="idnum2" defaultValue={user.idnum2 || ''} inputMode="numeric" pattern="[0-9]" maxLength="1" required/></label><label>입사일자<input type="date" name="joindate" defaultValue={user.joindate?.slice(0, 10) || ''}/></label></div>
         <div className="form-grid three"><label>전화번호<input type="tel" name="phonenum" defaultValue={user.phonenum || ''} placeholder="010-0000-0000" required/></label><label>내선번호<input type="tel" name="officenum" defaultValue={user.officenum || ''} placeholder="02-000-0000" required/></label><label>이메일<input type="email" name="email" defaultValue={user.email || ''} required/></label></div>
         <div className="form-grid three"><label>부서<select name="team" defaultValue={user.team || ''} required><option value="" disabled>선택해 주세요</option>{TEAMS.map((item) => <option key={item}>{item}</option>)}</select></label><label>직급<select name="level" defaultValue={user.level || ''} required><option value="" disabled>선택해 주세요</option>{LEVELS.map((item) => <option key={item}>{item}</option>)}</select></label><label>근무상태<select name="userStatus" defaultValue={user.userStatus || '재직'} required>{STATUSES.map((item) => <option key={item}>{item}</option>)}</select></label></div>
@@ -169,14 +171,16 @@ export function PasswordChange({ navigate, csrf }) {
 
   async function submit(event) {
     event.preventDefault()
-    const body = Object.fromEntries(new FormData(event.currentTarget).entries())
+    const form = event.currentTarget
+    const body = Object.fromEntries(new FormData(form).entries())
+    setSuccess('')
     if (body.newPassword !== body.confirmPassword) return setError('새 비밀번호 확인이 일치하지 않습니다.')
     setSaving(true)
     setError('')
     try {
       const result = await sendJson('/api/users/me/password', 'POST', body, csrf)
       setSuccess(result.message)
-      event.currentTarget.reset()
+      form.reset()
     } catch (reason) {
       setError(reason.message)
     } finally {

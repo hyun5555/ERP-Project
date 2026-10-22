@@ -1,5 +1,13 @@
 target/
 frontend/node_modules/
+frontend/test-results/
+frontend/playwright-report/
 uploads/
+.local-dev/
+__pycache__/
 .DS_Store
 *.log
+
+# Portfolio scope: keep completed/cancelled larger runs local.
+performance/results/20261022T103945Z-2fe863/10000/
+performance/results/20261022T103945Z-2fe863/100000/

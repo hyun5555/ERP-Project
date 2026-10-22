@@ -1,0 +1,16 @@
+CREATE TABLE `approval` (
+  `approval_no` int NOT NULL AUTO_INCREMENT,
+  `kind` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `writedate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `approval_title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approval_content` text COLLATE utf8mb4_unicode_ci,
+  `document_status` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `usernum` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approval_code` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`approval_no`),
+  KEY `fk_approval_user` (`usernum`),
+  CONSTRAINT `fk_approval_user` FOREIGN KEY (`usernum`) REFERENCES `user` (`usernum`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=1001000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+INDEXES
+[approval, 0, PRIMARY, 1, approval_no, A, 909, null, null, , BTREE, , , YES, null]
+[approval, 1, fk_approval_user, 1, usernum, A, 98, null, null, YES, BTREE, , , YES, null]

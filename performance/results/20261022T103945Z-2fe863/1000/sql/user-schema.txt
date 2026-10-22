@@ -1,0 +1,20 @@
+CREATE TABLE `user` (
+  `usernum` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `userpw` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `idnum1` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `idnum2` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phonenum` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `officenum` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `team` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `level` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `firstlogin` tinyint(1) NOT NULL DEFAULT '1',
+  `joindate` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `authority` tinyint(1) NOT NULL DEFAULT '0',
+  `level_num` int DEFAULT NULL,
+  `user_status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '재직',
+  PRIMARY KEY (`usernum`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+INDEXES
+[user, 0, PRIMARY, 1, usernum, A, 15, null, null, , BTREE, , , YES, null]

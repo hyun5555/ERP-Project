@@ -1,0 +1,8 @@
+CREATE TABLE `notice_team` (
+  `notice_no` int NOT NULL,
+  `notice_team` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  KEY `fk_notice_team_notice` (`notice_no`),
+  CONSTRAINT `fk_notice_team_notice` FOREIGN KEY (`notice_no`) REFERENCES `notice` (`notice_no`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+INDEXES
+[notice_team, 1, fk_notice_team_notice, 1, notice_no, A, 1001, null, null, , BTREE, , , YES, null]

@@ -41,7 +41,7 @@ CREATE TABLE notice (
     fname VARCHAR(255),
     noticedate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     usernum VARCHAR(50),
-    CONSTRAINT fk_notice_user FOREIGN KEY (usernum) REFERENCES user(usernum)
+    CONSTRAINT fk_notice_user FOREIGN KEY (usernum) REFERENCES user(usernum) ON DELETE RESTRICT
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE notice_team (
@@ -61,7 +61,7 @@ CREATE TABLE approval (
     usernum VARCHAR(50),
     approval_code VARCHAR(255),
     CONSTRAINT fk_approval_user FOREIGN KEY (usernum)
-        REFERENCES user(usernum) ON DELETE CASCADE
+        REFERENCES user(usernum) ON DELETE RESTRICT
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE approval_file (
@@ -82,7 +82,7 @@ CREATE TABLE approval_line (
     comment VARCHAR(255),
     PRIMARY KEY (approval_no, approval_target),
     CONSTRAINT fk_approval_line_user FOREIGN KEY (approval_target)
-        REFERENCES user(usernum) ON DELETE CASCADE,
+        REFERENCES user(usernum) ON DELETE RESTRICT,
     CONSTRAINT fk_approval_line_approval FOREIGN KEY (approval_no)
         REFERENCES approval(approval_no) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -95,9 +95,9 @@ CREATE TABLE chat_room (
     last_message_at DATETIME NULL,
     UNIQUE KEY uk_chat_room_users (user_a, user_b),
     CONSTRAINT fk_chat_room_user_a FOREIGN KEY (user_a)
-        REFERENCES user(usernum) ON DELETE CASCADE,
+        REFERENCES user(usernum) ON DELETE RESTRICT,
     CONSTRAINT fk_chat_room_user_b FOREIGN KEY (user_b)
-        REFERENCES user(usernum) ON DELETE CASCADE
+        REFERENCES user(usernum) ON DELETE RESTRICT
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 CREATE TABLE chat_message (
@@ -110,7 +110,7 @@ CREATE TABLE chat_message (
     CONSTRAINT fk_chat_message_room FOREIGN KEY (room_no)
         REFERENCES chat_room(room_no) ON DELETE CASCADE,
     CONSTRAINT fk_chat_message_sender FOREIGN KEY (sender_usernum)
-        REFERENCES user(usernum) ON DELETE CASCADE,
+        REFERENCES user(usernum) ON DELETE RESTRICT,
     INDEX idx_chat_message_room_message (room_no, message_no),
     INDEX idx_chat_message_unread (room_no, sender_usernum, read_at)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

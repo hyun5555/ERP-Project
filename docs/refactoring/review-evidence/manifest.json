@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-06",
+  "java": "21.0.12.1",
+  "mysql": "8.4.11",
+  "python": "3.11.15",
+  "node": "26.7.0",
+  "head": "b27f15b2ba7ec8cccf3983287d636b4a631fc8fc",
+  "tracked_diff_sha256": "4ca0e5b7f7d7819caf107e7ad6d1b131063fca0eab849c5d0638b129dfe950cc",
+  "files_sha256": {
+    "document/ERP.sql": "7b1844885b857a1d27acc8570823061424ec3bae86f2440234b439dbe04cae58",
+    "src/main/resources/schema.sql": "bff8cee130252015b7143e0865cf44a3f415d5ba717d0a906e24c51579df2370",
+    "scripts/dev-environment.py": "b3b613eb73e17469d598ef7526df2a6d0cecbbbf36b6d643061b5f3342604914",
+    "scripts/verify-dev-recovery.py": "43992ea8fb1ed89e46f8d15dff2afa40b245139a32204d5d89bc75f3b07f6b27"
+  },
+  "war_sha256": "35525352255d3dde608fb9cd10859715a6ec428b31299269e090391070ee40f0",
+  "native_browser": {
+    "source_core_flow_passed": true,
+    "restore_core_flow_passed": true,
+    "native_websocket_logout_passed": true,
+    "password_ui_bug_observed": true,
+    "original_e2e_spec_restored": true
+  },
+  "native_verification": {
+    "evidence": [
+      "native-recovery.json",
+      "native-client-guard.json",
+      "native-final-restore.json"
+    ],
+    "global_environment_overrides_rejected": true,
+    "override_attachment_download_matches": true,
+    "backup_directory_symlink_rejected": true
+  }
+}

@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,19 +18,23 @@ import com.erp.vo.userVO;
 public class NoticeService {
 
 	private final NoticeMapper noticeMapper;
+	private final UserService userService;
+	private final AttachmentStorage attachments;
 
-	public NoticeService(NoticeMapper noticeMapper) {
+	public NoticeService(NoticeMapper noticeMapper, UserService userService, AttachmentStorage attachments) {
 		this.noticeMapper = noticeMapper;
+		this.userService = userService;
+		this.attachments = attachments;
 	}
 
 	@Transactional
 	public int createNotice(noticeVO notice, String[] teams, userVO actor) {
-		requireAdmin(actor);
+		userVO current = userService.requireAdmin(actor);
 		if (teams == null || teams.length == 0) {
 			throw new IllegalArgumentException("공지 대상을 한 곳 이상 선택해야 합니다.");
 		}
 
-		notice.setUsernum(actor.getUsernum());
+		notice.setUsernum(current.getUsernum());
 		noticeMapper.insertNotice(notice);
 		noticeMapper.insertNoticeTeams(notice.getNotice_no(), Arrays.asList(teams));
 		return notice.getNotice_no();
@@ -39,11 +42,12 @@ public class NoticeService {
 
 	@Transactional
 	public noticeVO deleteNotice(int noticeNo, userVO actor) {
-		requireAdmin(actor);
+		userService.requireAdmin(actor);
 		noticeVO notice = getNotice(noticeNo);
 		if (noticeMapper.deleteNotice(noticeNo) != 1) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "공지사항이 없습니다.");
 		}
+		if (notice.getPname() != null) attachments.deleteAfterCommit(List.of(notice.getPname()));
 		return notice;
 	}
 
@@ -72,18 +76,17 @@ public class NoticeService {
 	}
 
 	public List<noticeVO> getRecentForUser(userVO user) {
-		String teamCode = switch (user.getTeam()) {
+		return findForAi(user, null, "");
+	}
+
+	public List<noticeVO> findForAi(userVO user, Integer noticeNo, String title) {
+		String teamCode = switch (user.getTeam() == null ? "" : user.getTeam()) {
 			case "개발" -> "100";
 			case "디자인" -> "200";
 			case "경영지원" -> "300";
 			default -> null;
 		};
-		return noticeMapper.selectRecentForUser(teamCode, user.isAuthority());
+		return noticeMapper.selectRecentForUser(teamCode, user.isAuthority(), noticeNo, title);
 	}
 
-	private static void requireAdmin(userVO actor) {
-		if (actor == null || !actor.isAuthority()) {
-			throw new AccessDeniedException("관리자만 공지사항을 변경할 수 있습니다.");
-		}
-	}
 }

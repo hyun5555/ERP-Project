@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,8 +16,10 @@ import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.MessageDigestPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.erp.service.LoginService;
+import com.erp.service.SessionRevocationService;
 import com.erp.vo.userVO;
 
 @Configuration
@@ -33,8 +36,15 @@ public class SecurityConfig {
 	}
 
 	@Bean
+	ServletListenerRegistrationBean<SessionRevocationService> sessionRevocationListener(
+			SessionRevocationService sessions) {
+		return new ServletListenerRegistrationBean<>(sessions);
+	}
+
+	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http,
-			PasswordEncoder passwordEncoder, LoginService loginService) throws Exception {
+			PasswordEncoder passwordEncoder, LoginService loginService,
+			SessionRevocationService sessions) throws Exception {
 		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(loginService);
 		authenticationProvider.setPasswordEncoder(passwordEncoder);
 		authenticationProvider.setUserDetailsPasswordService(loginService);
@@ -50,14 +60,28 @@ public class SecurityConfig {
 				.requestMatchers("/notice/write.do", "/notice/writeOK.do", "/notice/delete.do")
 					.hasRole("ADMIN")
 				.anyRequest().authenticated())
+			.exceptionHandling(exceptions -> exceptions.accessDeniedHandler((request, response, denied) -> {
+				if (!request.getRequestURI().startsWith(request.getContextPath() + "/api/")
+						&& request.getRequestedSessionId() != null && !request.isRequestedSessionIdValid()) {
+					response.sendRedirect(request.getContextPath() + "/login/login.do");
+				} else {
+					response.sendError(HttpServletResponse.SC_FORBIDDEN);
+				}
+			}))
 			.formLogin(form -> form
 				.loginPage("/login/login.do")
 				.loginProcessingUrl("/login/login.do")
 				.usernameParameter("usernum")
 				.passwordParameter("userpw")
 				.successHandler((request, response, authentication) -> {
-					userVO loginUser = loginService.findByUsernum(authentication.getName());
-					request.getSession().setAttribute("loginUser", loginUser);
+					userVO loginUser;
+					try {
+						loginUser = sessions.register(request.getSession(), authentication);
+					} catch (org.springframework.security.core.AuthenticationException | IllegalStateException changed) {
+						SecurityContextHolder.clearContext();
+						write(response, HttpServletResponse.SC_UNAUTHORIZED, "ERROR");
+						return;
+					}
 					write(response, HttpServletResponse.SC_OK,
 							loginUser.isFirstlogin() ? "CHANGE" : "OK");
 				})

@@ -18,8 +18,28 @@ EZENT ERP는 기업 내 전자결재, 공지사항, 사원관리, 1:1 메신저�
 
 ## 로컬 실행
 
-Java 21과 Docker Desktop을 실행한 뒤 VS Code에서 이 폴더를 열고 `F5`를 누릅니다.
-MySQL 컨테이너가 자동으로 기동되고 `http://localhost:8080/ERP/`가 열립니다.
+개인 개발은 Docker 없이 Java 21·native MySQL 8.4·Python 3.11 이상으로 실행합니다. 앱·DB 데이터·첨부는 `.local-dev/source` 안에서 분리되고 앱과 DB는 `127.0.0.1`의 별도 포트만 사용합니다. 초기화는 새 환경에서 한 번만 수행합니다.
+
+```bash
+npm --prefix frontend ci
+npm --prefix frontend run build
+./mvnw --batch-mode -DskipTests package
+python3 scripts/dev-environment.py init
+python3 scripts/dev-environment.py start
+python3 scripts/dev-environment.py status
+```
+
+`status`가 실제 접속 주소를 출력합니다. MySQL 실행 파일 기본 경로는 `/opt/homebrew/opt/mysql@8.4/bin`이며 다른 환경에서는 `--mysql-bin /설치경로/bin`을 지정합니다. macOS 설치 명령은 `brew install mysql@8.4`이며 시스템 서비스를 시작할 필요가 없습니다. 생성된 비밀번호·DB·첨부·백업은 Git에 넣지 않습니다.
+
+```bash
+python3 scripts/dev-environment.py check
+python3 scripts/verify-dev-recovery.py
+python3 scripts/dev-environment.py stop
+```
+
+복구 검증은 전용 개발 계정·결재·첨부를 만들고 새 독립 환경에 복원합니다. 원본과 복원본의 스키마·행·첨부를 비교하고 복원본에서 동시 번호 발급을 확인합니다. 기존 환경에 복원하는 요청은 거부합니다. 세부 명령과 검증 범위는 [개발 환경·복구 설계](docs/refactoring/deployment-readiness-design.md), 확인된 코드 문제와 결과는 [5·6단계 통합 검토](docs/refactoring/stage5-6-design-review.md)에 있습니다.
+
+2026-10-22에 기존 세션 권한 회수·본인 결재 차단·사원 이력 보존을 구현하고 현재 native 환경에 반영했습니다. 기존 DB는 재초기화하지 않고 백업 후 [사용자 참조 FK migration](document/migrations/20261021-preserve-user-history.sql)을 적용합니다. 쓰기 중지·전환·재개 절차와 실제 보존·회귀 결과는 [P1 설계·구현 기록](docs/refactoring/p1-session-approval-history.md)을 따릅니다.
 
 React 소스를 수정한 경우 Spring Boot 실행 전에 프론트엔드를 빌드합니다.
 
@@ -32,25 +52,38 @@ npm run build
 로컬 AI 챗봇까지 확인하려면 별도 터미널에서 기본 모델을 준비합니다.
 
 ```bash
-ollama pull qwen3:4b
+ollama pull qwen3.5:2b
 ollama serve
 ```
 
 모델 서버 주소와 모델은 `ERP_AI_BASE_URL`, `ERP_AI_MODEL` 환경 변수로 변경할 수 있습니다. Ollama가 꺼져 있어도 ERP의 다른 업무 기능은 실행됩니다.
 
 - 테스트 계정: `admin` / `1234`
-- MySQL: `localhost:3307`, 데이터베이스·사용자·비밀번호 `erp`
-- 종료: VS Code 디버그 중지 후 `Terminal > Run Task > mysql: down`
+- MySQL: 전용 랜덤 포트·데이터베이스 `erp`, 앱용 DML 계정과 무작위 비밀번호
+- 종료: `python3 scripts/dev-environment.py stop`
 
-## 검증
+기존 VS Code `F5`·Compose 설정은 과거 Docker 개발 방식으로 남겨 두었습니다. 위 native 실행은 이 설정을 사용하지 않습니다.
+
+의존성 High 2건과 첨부·목록·메신저·암호/로그인 사용성 문제도 보완했습니다. [최신 구현·검증 기록](docs/refactoring/data-usability-performance.md)에 전체 회귀 80개·브라우저 9개와 [포트폴리오용 1천 건 측정 결과](performance/results/20261022T103945Z-2fe863/README.md)를 정리했습니다. 성능 도구 기본값은 1천 건입니다.
+
+포트폴리오 제출 전 남은 작은 개발과 README·시연 자료 마감은 [남은 작업 목록](docs/refactoring/portfolio-readiness.md)에 정리했습니다.
+
+## 기존 전체 회귀 검증
+
+아래 JUnit 회귀는 Testcontainers를 사용하므로 Docker가 필요합니다. 위 native 개발·복구 검증과 별도 실행 경계입니다.
 
 ```bash
-./mvnw clean test
-./scripts/benchmark.sh 측정이름
+npm --prefix frontend ci
+npm --prefix frontend test
+npm --prefix frontend run build
+cd frontend && npx playwright install chromium && cd ..
+./mvnw --batch-mode test
 ```
 
-19개 통합 테스트는 Testcontainers가 생성한 격리 MySQL에 연결해 로그인, BCrypt 전환·비밀번호 변경, React용 JSON API, 관리자 API, 전자결재 작성·승인·반려·수정·첨부파일 권한·롤백, 메신저 저장·읽음·접근 권한, 로컬 AI 스트리밍·문맥 권한을 확인합니다. AI 테스트는 실제 모델 대신 가짜 응답을 사용하며 개발용 MySQL 데이터는 변경하지 않습니다.
-성능 측정 결과는 `performance/results/`에 저장됩니다.
+회귀 테스트는 Testcontainers의 격리 MySQL로 인증·권한·전자결재·사원번호 동시 발급·실제 WebSocket 송수신과 재접속을 확인합니다. AI는 질문별 SQL 문맥, 실제 HTTP 스트림의 완료·오류·본문 제한 시간, Node SSE 처리를 검증합니다. Chromium에서 로그인 → 결재 작성 → 순차 승인과 첨부 다운로드, 세션 만료 후 읽기·쓰기의 로그인 복귀와 데이터 보존도 확인합니다. 개발용 MySQL 데이터는 변경하지 않습니다.
+
+전체 Maven 검증에 브라우저 흐름이 포함됩니다. 반복 검증은 `ERP_E2E_REPEAT=2 ./mvnw --batch-mode -Dtest=BrowserFlowIntegrationTest test`로 실행합니다. 실제 AI 모델 비교는 Ollama가 실행된 환경에서 별도 수행하며, 질문·답변 원문과 실패율·응답시간을 저장합니다. 기본 CI는 실제 모델 설치를 요구하지 않습니다.
+과거 `scripts/benchmark.sh`는 현재 로그인 화면에서 CSRF를 찾지 못하며, HTML 셸 응답만 측정하므로 새 성능 검증에 사용하지 않습니다. 대량 API·SQL·메신저·브라우저 측정 기준은 [실제 성능 측정 설계](docs/refactoring/performance-measurement-design.md)에 정리했습니다. 기존 결과는 `performance/results/`에 보존합니다.
 
 전체 리팩터링 결과, 검증된 성능 수치와 트러블슈팅은 [리팩터링 종합 기록](docs/refactoring/refactoring-summary.md)에 정리했습니다.
 전자결재 리팩터링 구조, 테스트 범위, 트러블슈팅과 Before/After 수치는 [전자결재 리팩터링 기록](docs/refactoring/approval-refactoring.md)에 정리했습니다.
@@ -58,6 +91,8 @@ ollama serve
 React/Vite 전환 범위와 화면 캡처, 성능·트러블슈팅 기록은 [프론트엔드 React 전환 기록](docs/refactoring/frontend-react-transition.md)에 정리했습니다.
 1:1 사내 메신저의 구조, 권한, 재접속과 검증 내용은 [사내 메신저 MVP 기록](docs/refactoring/messenger-mvp.md)에 정리했습니다.
 로컬 LLM 챗봇의 권한별 문맥, 스트리밍, 장애 처리와 측정 기준은 [로컬 LLM 챗봇 MVP 기록](docs/refactoring/local-llm-mvp.md)에 정리했습니다.
+질문에 맞는 AI 자료 검색, 실제 모델 반복 비교와 브라우저·CI 재현 방법은 [AI 품질·브라우저 핵심 흐름 기록](docs/refactoring/ai-quality-browser-flows.md)에 정리했습니다.
+개인 개발에 사용할 Agency Agents 역할, 결재·사원번호·메신저 정책과 검증은 [개인 개발용 에이전트 활용 기록](docs/refactoring/solo-agent-workflow.md)에 정리했습니다.
 
 ---
 
@@ -83,7 +118,7 @@ React/Vite 전환 범위와 화면 캡처, 성능·트러블슈팅 기록은 [�
 ## ✔ 결재선 시스템
 
 * 결재자 추가/삭제 기능
-* 직급 기준 자동 결재 순서 처리
+* 등록된 결재선 순서대로 승인·반려 처리
 * 팝업 기반 결재자 선택 UI 구현
 
 ## ✔ 검색 기능
@@ -200,7 +235,7 @@ React/Vite 전환 범위와 화면 캡처, 성능·트러블슈팅 기록은 [�
 
 ### ✔ 특징
 
-* 직급 기준 자동 결재 순서 처리
+* 앞 결재자의 승인 이후 다음 결재 처리, 반려·최종 승인 후 추가 처리 차단
 * 반려 시 코멘트 필수 작성
 * 승인 완료 문서 전체 열람 가능
 * 작성자와 결재자 간 알림 흐름 구현

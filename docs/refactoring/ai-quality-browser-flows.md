@@ -1,0 +1,93 @@
+# AI 답변 품질과 브라우저 핵심 흐름
+
+적용일: 2026-10-06. AI Engineer가 문맥 검색과 모델 통신을, Test Automation Engineer가 브라우저 흐름을 구현했다. Application Security Engineer가 바뀐 인증·문맥 경로를 독립 검토하고 주 에이전트가 실제 모델 비교와 전체 검증을 수행했다.
+
+## AI 자료 선택
+
+공지 질문은 전사·본인 부서 공지만 사용한다. 결재 질문은 현재 본인 순서의 대기·진행 문서만 사용한다. 앞 결재자가 처리하지 않은 문서, 완료·반려 문서, 타인 문서는 제외한다. 업무·할 일 질문은 두 영역을 함께 조회한다.
+
+문서 번호나 제목 조건과 권한 조건을 SQL의 `LIMIT 5` 전에 적용한다. 제목은 따옴표로 지정할 수 있고 영역별 조건을 따로 적용한다. 없는 번호·제목을 최근 다른 문서로 대체하지 않는다. 자료가 없거나 지원 범위 밖인 질문은 모델 호출 없이 `context-only` 응답으로 안내한다.
+
+명시적 우선순위·우선 처리 질문도 모델을 호출하지 않는다. 현재 자료에는 우선순위나 마감 기준이 없으므로 확인 불가 안내와 권한 내 문서 번호·제목·결재 상태 목록을 직접 반환한다. 작성일을 우선순위로 바꾸거나 참고자료 속 명령을 우선 업무로 제시하지 않는다.
+
+프롬프트에는 선택한 영역의 문서 번호·제목·상태·본문 일부만 넣는다. 첨부파일 내용, 전체 과거 문서, 의미 기반 검색은 지원 범위에 포함되지 않는다. 지금은 명시적 단어로 질문과 제목을 찾으며 실제 실패 질문이 쌓이면 검색을 보완한다.
+
+## 스트림과 실패 처리
+
+JDK HTTP 클라이언트가 연결·헤더뿐 아니라 본문 완료까지 제한 시간을 적용한다. Ollama `done:true`와 빈 값이 아닌 답변이 모두 있어야 성공한다. 모델 오류, HTTP 실패, 중간 EOF, 완료 뒤 추가 데이터, 지연 본문은 실패 처리한다. SSE 클라이언트도 완료 이벤트와 정상 EOF를 확인한 뒤에만 성공 지표를 표시한다. 브라우저 중단과 서버 타임아웃은 작업을 취소한다.
+
+일반 CI는 실제 모델 설치에 의존하지 않는다. 실제 MySQL 조회와 가짜 모델의 프롬프트 확인, 로컬 HTTP 서버의 완료·실패·제한 시간, Node SSE 파서 검사로 회귀를 고정한다.
+
+## 실제 모델 비교 재현
+
+Ollama에 비교할 모델을 준비하고 Docker Desktop을 실행한다. 출력 폴더는 매번 새로 지정한다.
+
+```bash
+ERP_AI_EVAL_MODELS=qwen3.5:2b,qwen3.5:9b \
+ERP_AI_EVAL_REPEATS=2 \
+ERP_AI_EVAL_OUTPUT=performance/results/ai-quality-new-run \
+ERP_AI_EVAL_MACHINE='측정 장비와 메모리' \
+./mvnw --batch-mode -Dtest=AiModelEvaluationTest test
+```
+
+테스트는 격리 MySQL에 동일한 공지·결재·권한 데이터를 넣고 실제 `AiService`와 `LocalLlmClient`를 호출한다. 모델별 워밍업 1회 뒤 질문 8개를 각각 2회 실행한다. 모델 생성은 10회, 우선순위·없는 번호·지원 범위 밖의 직접 안내는 6회로 구분한다. `think=false`, `temperature=0.2`, 본문 전체 60초 제한을 사용한다. 모델·반복마다 같은 질문의 프롬프트 SHA-256이 같아야 한다.
+
+`responses.jsonl`은 환경·설치 모델 digest·워밍업·원문 답변·실패·첫 토큰·전체 시간을, `summary.json`은 집계값을 보관한다. 키워드 검사만으로 일반 정확도를 주장하지 않으며 원문도 검토한다. 응답시간은 성공한 워밍업 이후 모델 호출만 집계하고 SQL·ERP HTTP/SSE·브라우저 표시 시간은 포함하지 않는다. 10개 표본의 p95는 서비스 보장이 아니다.
+
+## 기본 모델 선정 근거
+
+기본 모델은 `qwen3.5:2b`, 추론 모드는 `false`로 변경했다. `ERP_AI_MODEL`로 다른 모델을 사용할 수 있다. Mac17,2·32 GiB·macOS 26.5.2·Ollama 0.33.0·Java 21에서 동일한 8개 질문을 두 번 비교했다. 우선순위 직접 안내를 추가하기 전의 선정 비교는 다음과 같다.
+
+| 모델 | 모델 호출 실패 | 사실·출처 검사 | 첫 토큰 p50 / 표본 p95 | 전체 p50 / 표본 p95 |
+|---|---:|---:|---:|---:|
+| qwen3.5:2b | 0/12 | 11/12 | 175 / 316 ms | 986 / 5,269 ms |
+| qwen3.5:9b | 0/12 | 10/12 | 755 / 1,423 ms | 2,740 / 16,680 ms |
+
+두 모델 모두 단순 공지·결재·장소 질문은 통과했다. 2B는 복합 우선 질문의 두 번째 답변에서 공지 일부와 확인 불가 안내를 누락했다. 9B는 같은 질문에서 참고자료의 명령문을 두 번 인용했다. 9B로 바꿔도 이 문제를 해결하지 못했고 지연도 늘어났다. 그래서 빠른 2B를 기본으로 사용하고, 자료에 없는 우선순위 요청은 서버의 직접 안내로 보완했다.
+
+[선정 비교 집계](../../performance/results/ai-quality-20261006-selected/summary.json)와 [전체 원문](../../performance/results/ai-quality-20261006-selected/responses.jsonl)을 보관했다. 두 탐색 실행에서는 최초 프롬프트의 출처 누락·문서 유형 혼동과 검사 자체의 오류를 발견했으며 폴더별 README에 이유를 남겼다. 불완전한 실행을 최종 비교 분모에 섞지 않는다.
+
+최종 구현으로 동일 질문을 다시 실행한 결과는 다음과 같다. 두 모델 합계 32건의 지정 사실·출처 검사와 직접 안내 경로가 모두 통과했다. 원문을 검토했으며 권한 밖의 자료나 악성 명령문은 이 실행의 답변에 포함되지 않았다.
+
+| 모델 | 실제 모델 호출 실패 | 모델 사실·출처 검사 | 직접 안내 | 첫 토큰 p50 / 표본 p95 | 전체 p50 / 표본 p95 |
+|---|---:|---:|---:|---:|---:|
+| qwen3.5:2b | 0/10 (0%) | 10/10 | 6/6 | 166 / 214 ms | 840 / 2,292 ms |
+| qwen3.5:9b | 0/10 (0%) | 10/10 | 6/6 | 677 / 1,015 ms | 2,332 / 6,117 ms |
+
+[최종 집계](../../performance/results/ai-quality-20261006-guarded/summary.json)와 [최종 원문](../../performance/results/ai-quality-20261006-guarded/responses.jsonl)을 재현 근거로 남겼다. 우선순위 질문을 모델 대신 직접 처리했으므로 선정 비교와의 시간 차이를 모델 성능 개선율로 계산하지 않는다. 지정한 8개 질문의 확인 결과이며 모든 자연어 질문의 정확도를 보장하지 않는다.
+
+## 실제 브라우저 검증
+
+```bash
+npm --prefix frontend ci
+npm --prefix frontend test
+npm --prefix frontend run build
+cd frontend
+npx playwright install chromium
+cd ..
+ERP_E2E_REPEAT=2 ./mvnw --batch-mode -Dtest=BrowserFlowIntegrationTest test
+```
+
+JUnit이 Testcontainers MySQL, 임시 첨부 폴더, 랜덤 포트 서버와 전용 작성자·결재자 계정을 준비한다. Playwright를 단독으로 개발 서버에 연결하지 않는다. 서버 세션의 실제 idle timeout을 테스트 전용 빈에서 설정하고, 세션 쿠키를 갖지 않은 별도 요청으로 대기 완료를 확인한다. 다음 보호 요청에서 Tomcat이 세션을 만료시킨다. 이 빈은 `src/test`에만 존재하며 운영 앱에 등록되지 않는다.
+
+| 흐름 | 확인 결과 |
+|---|---|
+| 로그인 → 결재 작성 → 순차 승인 | 작성 UI, 두 결재자의 순서·최종 상태·처리 의견, 첨부 다운로드 파일명과 바이트 |
+| 만료 뒤 보호 데이터 조회 | 로그인 화면 복귀, 서버의 미인증 상태 |
+| 만료 뒤 JSON 비밀번호 변경 | 로그인 화면 복귀, 기존 비밀번호 유지 |
+| 만료 뒤 결재 승인 POST | 로그인 화면 복귀, 결재선·문서·의견 유지 |
+| 만료 뒤 multipart 결재 작성 | 로그인 화면 복귀, 신규 문서 미생성 |
+
+공통 `authenticatedFetch`가 만료 응답을 처리한다. CSRF 403인 경우 현재 세션을 확인해 만료일 때 로그인으로 이동하고 실제 권한 거부 403은 유지한다. 일반 폼 제출의 만료 세션 CSRF 실패는 서버에서 로그인으로 보낸다.
+
+2026-10-06 Chromium에서 5개 흐름 × 2회, 재시도 0회로 **10/10 통과**했다. 브라우저 실행은 16.6초였고 JUnit 실행도 통과했다. Firefox·WebKit, 시각 회귀, 브라우저 부하 측정은 포함하지 않는다.
+
+최종 전체 Maven에서도 기본 5개 흐름이 9.2초에 통과했다. Maven 결과는 56개 통과, 실패·오류 0개이며 실제 모델 평가 1개만 별도 실행을 위해 기본 명령에서 건너뛴다. 실제 평가는 앞서 최종 32건을 실행했다. Node 7개와 Vite 빌드도 통과했다.
+
+## CI와 근거
+
+GitHub Actions는 프론트 설치·Node 검사·빌드, Chromium 시스템 의존성 설치, 전체 Maven 검증을 순서대로 실행한다. 실패하면 trace·스크린샷·영상·HTML 보고서와 `target/browser-flow.log`를 7일 보관한다. JUnit의 자식 Playwright 로그는 별도 파일로 보내 Surefire 통신을 방해하지 않게 했다. 원격 GitHub Actions 실행은 이번 로컬 작업에서 수행하지 않았다.
+
+[Playwright 공식 CI 지침](https://playwright.dev/docs/ci)의 Chromium 설치 방식을 사용했다. 모델 요청은 [Ollama 공식 generate API](https://docs.ollama.com/api/generate)를 따른다.
+
+관련 파일: [AI 모델 비교](../../src/test/java/com/erp/AiModelEvaluationTest.java), [브라우저 실행 준비](../../src/test/java/com/erp/BrowserFlowIntegrationTest.java), [Playwright 흐름](../../frontend/e2e/core-flow.spec.js), [CI 설정](../../.github/workflows/ci.yml).

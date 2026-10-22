@@ -43,6 +43,7 @@ public class AiController {
 		userVO user = (userVO) session.getAttribute("loginUser");
 		SseEmitter emitter = new SseEmitter(emitterTimeoutMs);
 		Thread worker = Thread.ofVirtual().name("local-ai-" + user.getUsernum()).unstarted(() -> {
+			long started = System.nanoTime();
 			try {
 				GenerationStats stats = aiService.answer(user, question,
 						token -> send(emitter, "token", Map.of("text", token)));
@@ -54,8 +55,10 @@ public class AiController {
 				emitter.complete();
 			} catch (InterruptedException exception) {
 				Thread.currentThread().interrupt();
+				emitter.complete();
 			} catch (Exception exception) {
-				log.warn("local_ai_failed user={} reason={}", user.getUsernum(), exception.toString());
+				log.warn("local_ai_failed user={} duration_ms={} reason={}", user.getUsernum(),
+						(System.nanoTime() - started) / 1_000_000, exception.toString());
 				try {
 					send(emitter, "error", Map.of("message",
 							"로컬 AI가 응답하지 않습니다. 모델 실행 상태를 확인해 주세요."));
@@ -66,6 +69,8 @@ public class AiController {
 			}
 		});
 		emitter.onTimeout(worker::interrupt);
+		emitter.onError(error -> worker.interrupt());
+		emitter.onCompletion(worker::interrupt);
 		worker.start();
 		return emitter;
 	}

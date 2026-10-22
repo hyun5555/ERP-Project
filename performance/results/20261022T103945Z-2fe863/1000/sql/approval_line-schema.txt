@@ -1,0 +1,16 @@
+CREATE TABLE `approval_line` (
+  `approval_no` int NOT NULL,
+  `approval_target` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `approval_status` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `approval_sort` int DEFAULT NULL,
+  `approval_date` datetime DEFAULT NULL,
+  `comment` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`approval_no`,`approval_target`),
+  KEY `fk_approval_line_user` (`approval_target`),
+  CONSTRAINT `fk_approval_line_approval` FOREIGN KEY (`approval_no`) REFERENCES `approval` (`approval_no`) ON DELETE CASCADE,
+  CONSTRAINT `fk_approval_line_user` FOREIGN KEY (`approval_target`) REFERENCES `user` (`usernum`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+INDEXES
+[approval_line, 0, PRIMARY, 1, approval_no, A, 1001, null, null, , BTREE, , , YES, null]
+[approval_line, 0, PRIMARY, 2, approval_target, A, 3001, null, null, , BTREE, , , YES, null]
+[approval_line, 1, fk_approval_line_user, 1, approval_target, A, 4, null, null, , BTREE, , , YES, null]

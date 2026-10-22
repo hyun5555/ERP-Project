@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BASE, currentRoute, getJson } from './api'
+import { BASE, currentRoute, getJson, notifyDashboardChange } from './api'
 import { ApprovalCollection, ApprovalDetail, ApprovalForm, ApprovalList } from './approval/ApprovalPages'
 import { AppLayout } from './layout/AppLayout'
 import { Dashboard } from './layout/Dashboard'
@@ -27,7 +27,11 @@ export default function App() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const onPopState = () => setRoute(currentRoute())
+    const onPopState = () => {
+      const next = currentRoute()
+      setRoute(next)
+      if (next.path === `${BASE}/main.do`) notifyDashboardChange()
+    }
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
   }, [])
@@ -44,7 +48,17 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    if (session?.authenticated) getJson('/api/dashboard').then(setDashboard).catch((reason) => setError(reason.message))
+    if (!session?.authenticated) return
+    let active = true
+    let latest = 0
+    const refresh = () => {
+      const request = ++latest
+      getJson('/api/dashboard').then((data) => { if (active && request === latest) setDashboard(data) })
+        .catch((reason) => { if (active && request === latest) setError(reason.message) })
+    }
+    refresh()
+    window.addEventListener('erp:dashboard-changed', refresh)
+    return () => { active = false; window.removeEventListener('erp:dashboard-changed', refresh) }
   }, [session?.authenticated])
 
   function navigate(href) {
@@ -55,6 +69,7 @@ export default function App() {
     }
     window.history.pushState({}, '', url.pathname + url.search)
     setRoute(currentRoute())
+    if (url.pathname === `${BASE}/main.do`) notifyDashboardChange()
     setDrawerOpen(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -69,19 +84,19 @@ export default function App() {
     <AppLayout session={session} dashboard={dashboard} route={route} navigate={navigate} drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}>
       {error && <div className="alert" role="alert">{error}</div>}
       {route.path.endsWith('/main.do') && <Dashboard dashboard={dashboard} navigate={navigate}/>}
-      {route.path.endsWith('/approval/list.do') && <ApprovalList route={route} navigate={navigate}/>}
-      {route.path.endsWith('/approval/recv.do') && <ApprovalCollection type="received" route={route} navigate={navigate}/>}
-      {route.path.endsWith('/approval/allok.do') && <ApprovalCollection type="completed" route={route} navigate={navigate}/>}
+      {route.path.endsWith('/approval/list.do') && <ApprovalList key={route.search} route={route} navigate={navigate}/>}
+      {route.path.endsWith('/approval/recv.do') && <ApprovalCollection key={route.search} type="received" route={route} navigate={navigate}/>}
+      {route.path.endsWith('/approval/allok.do') && <ApprovalCollection key={route.search} type="completed" route={route} navigate={navigate}/>}
       {route.path.endsWith('/approval/write.do') && <ApprovalForm session={session}/>}
-      {route.path.endsWith('/approval/modify.do') && <ApprovalForm session={session} route={route} edit/>}
-      {route.path.endsWith('/approval/view.do') && <ApprovalDetail route={route} csrf={session.csrf} navigate={navigate}/>}
-      {route.path.endsWith('/notice/list.do') && <NoticeList session={session} route={route} navigate={navigate}/>}
-      {route.path.endsWith('/notice/view.do') && <NoticeDetail route={route} csrf={session.csrf} navigate={navigate}/>}
+      {route.path.endsWith('/approval/modify.do') && <ApprovalForm key={route.search} session={session} route={route} edit/>}
+      {route.path.endsWith('/approval/view.do') && <ApprovalDetail key={route.search} route={route} csrf={session.csrf} navigate={navigate}/>}
+      {route.path.endsWith('/notice/list.do') && <NoticeList key={route.search} session={session} route={route} navigate={navigate}/>}
+      {route.path.endsWith('/notice/view.do') && <NoticeDetail key={route.search} route={route} csrf={session.csrf} navigate={navigate}/>}
       {route.path.endsWith('/notice/write.do') && <NoticeForm csrf={session.csrf}/>}
-      {route.path.endsWith('/user/list.do') && <UserList route={route} navigate={navigate} csrf={session.csrf}/>}
-      {route.path.endsWith('/user/view.do') && <UserDetail route={route} navigate={navigate} csrf={session.csrf}/>}
+      {route.path.endsWith('/user/list.do') && <UserList key={route.search} route={route} navigate={navigate} csrf={session.csrf}/>}
+      {route.path.endsWith('/user/view.do') && <UserDetail key={route.search} route={route} navigate={navigate} csrf={session.csrf}/>}
       {route.path.endsWith('/user/write.do') && <UserForm route={route} navigate={navigate} csrf={session.csrf}/>}
-      {route.path.endsWith('/user/modify.do') && <UserForm route={route} navigate={navigate} csrf={session.csrf} edit/>}
+      {route.path.endsWith('/user/modify.do') && <UserForm key={route.search} route={route} navigate={navigate} csrf={session.csrf} edit/>}
       {route.path.endsWith('/user/myinfo.do') && <UserDetail route={route} navigate={navigate} csrf={session.csrf} myInfo/>}
       {route.path.endsWith('/login/changepw.do') && <PasswordChange navigate={navigate} csrf={session.csrf}/>}
     </AppLayout>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BASE, getJson } from '../api'
+import { BASE, authenticatedFetch, getJson } from '../api'
 import { CardSkeleton, EmptyState, Icon, PageState } from '../ui'
 
 export function NoticeList({ session, route, navigate }) {
@@ -52,9 +52,13 @@ export function NoticeDetail({ route, csrf, navigate }) {
   async function remove() {
     if (!window.confirm('공지사항을 삭제하시겠습니까?')) return
     const body = new URLSearchParams({ notice_no: noticeNo, [csrf.parameterName]: csrf.token })
-    const response = await fetch(`${BASE}/notice/delete.do`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body })
-    if (response.ok) navigate(`${BASE}/notice/list.do`)
-    else setError('공지사항을 삭제하지 못했습니다.')
+    try {
+      const response = await authenticatedFetch('/notice/delete.do', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body })
+      if (response.ok) navigate(`${BASE}/notice/list.do`)
+      else setError('공지사항을 삭제하지 못했습니다.')
+    } catch (reason) {
+      setError(reason.message)
+    }
   }
 
   if (error && !notice) return <PageState message={error}/>

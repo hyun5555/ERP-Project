@@ -1,0 +1,25 @@
+
+// Temporary observational probe; the reported UI error is not an acceptance criterion.
+test('stage56 successful password change review probe', async ({ page }) => {
+  await apiLogin(page.context(), users.drafter)
+  await openWorkspace(page, '/ERP/login/changepw.do')
+  const replacement = 'review-change-' + randomUUID()
+  await page.getByLabel('현재 비밀번호', { exact: true }).fill(password)
+  await page.getByLabel('새 비밀번호', { exact: true }).fill(replacement)
+  await page.getByLabel('새 비밀번호 확인', { exact: true }).fill(replacement)
+  const changed = page.waitForResponse(r => new URL(r.url()).pathname === '/ERP/api/users/me/password' && r.request().method() === 'POST')
+  await page.getByRole('button', { name: '비밀번호 변경', exact: true }).click()
+  const response = await changed
+  expect(response.status()).toBe(200)
+  await expect(page.getByRole('status')).toHaveText('비밀번호가 변경되었습니다.')
+  await expect(page.getByRole('button', { name: '비밀번호 변경', exact: true })).toBeEnabled()
+  const errors = await page.getByRole('alert').allTextContents()
+  const valueRetained = (await page.getByLabel('새 비밀번호', { exact: true }).inputValue()) === replacement
+  const { csrf } = await (await page.request.get('/ERP/api/session')).json()
+  const restored = await page.request.post('/ERP/api/users/me/password', {
+    data: { currentPassword: replacement, newPassword: password, confirmPassword: password },
+    headers: { [csrf.headerName]: csrf.token }
+  })
+  expect(restored.status()).toBe(200)
+  console.log('STAGE56_BROWSER_OBSERVATIONS=' + JSON.stringify({ passwordApiStatus: response.status(), successVisible: true, errors, passwordFieldRetained: valueRetained, restoredStatus: restored.status() }))
+})

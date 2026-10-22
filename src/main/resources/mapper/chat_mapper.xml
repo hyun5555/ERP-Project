@@ -32,9 +32,11 @@
 	</insert>
 
 	<select id="findOtherParticipant" resultType="string">
-		SELECT CASE WHEN user_a = #{usernum} THEN user_b ELSE user_a END
-		FROM chat_room
-		WHERE room_no = #{roomNo} AND #{usernum} IN (user_a, user_b)
+		SELECT CASE WHEN r.user_a = #{usernum} THEN ub.usernum ELSE ua.usernum END
+		FROM chat_room r
+		JOIN user ua ON ua.usernum = r.user_a
+		JOIN user ub ON ub.usernum = r.user_b
+		WHERE r.room_no = #{roomNo} AND #{usernum} IN (r.user_a, r.user_b)
 	</select>
 
 	<select id="selectRooms" resultMap="chatRoomMap">
@@ -52,14 +54,14 @@
 		FROM chat_room r
 		JOIN user u ON u.usernum = CASE WHEN r.user_a = #{usernum} THEN r.user_b ELSE r.user_a END
 		WHERE #{usernum} IN (r.user_a, r.user_b)
-		ORDER BY COALESCE(r.last_message_at, r.created_at) DESC
+		ORDER BY COALESCE(r.last_message_at, r.created_at) DESC, r.room_no DESC
 	</select>
 
 	<select id="selectContacts" resultType="com.erp.vo.userVO">
 		SELECT usernum, name, team, level
 		FROM user
 		WHERE usernum != #{usernum} AND user_status = '재직'
-		ORDER BY team, level_num, name
+		ORDER BY team, level_num, name, usernum
 	</select>
 
 	<select id="selectMessages" resultMap="chatMessageMap">
@@ -88,8 +90,13 @@
 		UPDATE chat_room SET last_message_at = CURRENT_TIMESTAMP WHERE room_no = #{roomNo}
 	</update>
 
+	<select id="hasMessage" resultType="boolean">
+		SELECT EXISTS(SELECT 1 FROM chat_message WHERE room_no = #{roomNo} AND message_no = #{messageNo})
+	</select>
+
 	<update id="markRead">
 		UPDATE chat_message SET read_at = CURRENT_TIMESTAMP
 		WHERE room_no = #{roomNo} AND sender_usernum != #{reader} AND read_at IS NULL
+		<if test="throughMessageNo != null">AND message_no &lt;= #{throughMessageNo}</if>
 	</update>
 </mapper>

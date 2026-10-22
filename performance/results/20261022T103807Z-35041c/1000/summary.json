@@ -1,0 +1,11 @@
+{
+  "quantile": "nearest rank ceil(p*N)",
+  "planned_samples": {},
+  "attempted_samples": {
+    "http": 0,
+    "messages": 0,
+    "browser": 0
+  },
+  "groups": [],
+  "note": "Closed-loop local synthetic samples; no maximum capacity, SLA or field INP claim. Planned minus attempted is not a successful request."
+}

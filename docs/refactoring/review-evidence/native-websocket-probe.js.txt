@@ -1,0 +1,44 @@
+
+test('stage56 native HTTP logout closes the authenticated WebSocket', async ({ page, browser }) => {
+  await apiLogin(page.context(), users.drafter)
+  await openWorkspace(page, '/ERP/main.do')
+  const { csrf } = await (await page.request.get('/ERP/api/session')).json()
+  const room = await page.request.post('/ERP/api/chat/rooms', { data: { partnerUsernum: 'admin' }, headers: { [csrf.headerName]: csrf.token } })
+  expect(room.status()).toBe(200)
+  const { roomNo } = await room.json()
+  await page.evaluate(({ csrf }) => {
+    window.reviewClosed = null
+    window.reviewReady = false
+    window.reviewSocket = new WebSocket(`ws://${location.host}/ERP/ws`)
+    const socket = window.reviewSocket
+    socket.onclose = event => { window.reviewClosed = { code: event.code, reason: event.reason } }
+    socket.onopen = () => socket.send(`CONNECT\naccept-version:1.2\nhost:localhost\n${csrf.headerName}:${csrf.token}\n\n\0`)
+    socket.onmessage = ({ data }) => {
+      if (data.startsWith('CONNECTED')) {
+        socket.send('SUBSCRIBE\nid:native-review-sync\ndestination:/user/queue/sync\n\n\0')
+        socket.send('SEND\ndestination:/app/chat.sync\ncontent-type:application/json\ncontent-length:2\n\n{}\0')
+      } else if (data.startsWith('MESSAGE') && data.includes('"ready":true')) window.reviewReady = true
+    }
+  }, { csrf })
+  await page.waitForFunction(() => window.reviewReady)
+  const logout = await page.request.post('/ERP/login/logout.do', { headers: { [csrf.headerName]: csrf.token }, maxRedirects: 0 })
+  expect(logout.status()).toBe(302)
+  await page.waitForFunction(() => window.reviewSocket.readyState === WebSocket.CLOSED)
+  const closure = await page.evaluate(() => window.reviewClosed)
+  expect(closure.code).toBe(1008)
+  expect((await (await page.request.get('/ERP/api/session')).json()).authenticated).toBe(false)
+  const content = 'after-logout-native-' + randomUUID()
+  await page.evaluate(({ roomNo, content }) => {
+    window.reviewSocket.send('SEND\ndestination:/app/chat.send\ncontent-type:application/json\n\n' + JSON.stringify({ roomNo, content }) + '\0')
+  }, { roomNo, content })
+  const observer = await browser.newContext({ baseURL: process.env.ERP_E2E_BASE_URL })
+  await apiLogin(observer, { id: 'admin' }).catch(async () => {
+    const { csrf } = await (await observer.request.get('/ERP/api/session')).json()
+    const login = await observer.request.post('/ERP/login/login.do', { form: { usernum: 'admin', userpw: '1234', [csrf.parameterName]: csrf.token } })
+    expect(await login.text()).toBe('OK')
+  })
+  const messages = await (await observer.request.get(`/ERP/api/chat/rooms/${roomNo}/messages`)).json()
+  expect(messages.some(message => message.content === content)).toBe(false)
+  await observer.close()
+  console.log('STAGE56_WS_OBSERVATIONS=' + JSON.stringify({ logoutStatus: logout.status(), httpAuthenticatedAfterLogout: false, closureCode: closure.code, storedAfterLogout: false }))
+})

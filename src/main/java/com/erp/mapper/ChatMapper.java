@@ -31,5 +31,8 @@ public interface ChatMapper {
 
 	int touchRoom(long roomNo);
 
-	int markRead(@Param("roomNo") long roomNo, @Param("reader") String reader);
+	boolean hasMessage(@Param("roomNo") long roomNo, @Param("messageNo") long messageNo);
+
+	int markRead(@Param("roomNo") long roomNo, @Param("reader") String reader,
+			@Param("throughMessageNo") Long throughMessageNo);
 }

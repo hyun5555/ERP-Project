@@ -1,0 +1,17 @@
+CREATE TABLE `chat_room` (
+  `room_no` bigint NOT NULL AUTO_INCREMENT,
+  `user_a` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_b` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_message_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`room_no`),
+  UNIQUE KEY `uk_chat_room_users` (`user_a`,`user_b`),
+  KEY `fk_chat_room_user_b` (`user_b`),
+  CONSTRAINT `fk_chat_room_user_a` FOREIGN KEY (`user_a`) REFERENCES `user` (`usernum`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_chat_room_user_b` FOREIGN KEY (`user_b`) REFERENCES `user` (`usernum`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=1000100 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+INDEXES
+[chat_room, 0, PRIMARY, 1, room_no, A, 1, null, null, , BTREE, , , YES, null]
+[chat_room, 0, uk_chat_room_users, 1, user_a, A, 1, null, null, , BTREE, , , YES, null]
+[chat_room, 0, uk_chat_room_users, 2, user_b, A, 1, null, null, , BTREE, , , YES, null]
+[chat_room, 1, fk_chat_room_user_b, 1, user_b, A, 1, null, null, , BTREE, , , YES, null]

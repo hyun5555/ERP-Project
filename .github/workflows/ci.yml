@@ -24,8 +24,23 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: 프론트엔드 빌드
+      - name: 프론트엔드 검증 및 빌드
         working-directory: frontend
-        run: npm ci && npm run build
+        run: npm ci && npm test && npm run build
+
+      - name: Chromium 설치
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
       - name: 테스트 실행
         run: ./mvnw --batch-mode test
+      - name: 실패한 브라우저 검증 기록
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: browser-test-failure
+          path: |
+            frontend/test-results/
+            frontend/playwright-report/
+            target/browser-flow.log
+          if-no-files-found: ignore
+          retention-days: 7

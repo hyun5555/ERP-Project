@@ -1,0 +1,6 @@
+{
+  "mysql_client_local_commands_rejected": true,
+  "sentinel_created": false,
+  "mysql_binary_mode": true,
+  "source_unchanged": true
+}

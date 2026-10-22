@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BASE, getJson } from '../api'
+import { BASE, authenticatedFetch, getJson } from '../api'
 import { CardSkeleton, EmptyState, Icon, PageState, initials } from '../ui'
 
 export function ApprovalList({ route, navigate }) {
@@ -140,7 +140,7 @@ export function ApprovalForm({ session, route, edit = false }) {
         <div className="form-drafter"><span className="avatar">{initials(options.drafter.name)}</span><div><small>기안자</small><strong>{options.drafter.name}</strong><span>{options.drafter.team} · {options.drafter.level}</span></div></div>
         <label className="form-field">제목<input name="approval_title" defaultValue={item?.title || ''} placeholder="제목을 입력해 주세요" required/></label>
         <label className="form-field">내용<textarea name="approval_content" defaultValue={item?.content || ''} placeholder="내용을 입력해 주세요" required/></label>
-        <fieldset className="approver-picker"><legend>결재선</legend><div>{options.approvers.map((person) => <label key={person.usernum} className={targets.includes(person.usernum) ? 'selected' : ''}><input type="checkbox" checked={targets.includes(person.usernum)} onChange={() => toggleTarget(person.usernum)}/><span className="avatar small">{initials(person.name)}</span><span><strong>{person.name}</strong><small>{person.team} · {person.level}</small></span></label>)}</div></fieldset>
+        <fieldset className="approver-picker"><legend>결재선 · 선택한 순서대로 진행</legend><div>{options.approvers.map((person) => <label key={person.usernum} className={targets.includes(person.usernum) ? 'selected' : ''}><input type="checkbox" checked={targets.includes(person.usernum)} onChange={() => toggleTarget(person.usernum)}/><span className="avatar small">{initials(person.name)}</span><span><strong>{person.name}</strong><small>{targets.includes(person.usernum) && `${targets.indexOf(person.usernum) + 1}차 · `}{person.team} · {person.level}</small></span></label>)}</div></fieldset>
         <label className="form-field">첨부파일<input type="file" name="attach"/></label>{edit && detail.files.length > 0 && <p className="muted">현재 파일: {detail.files.map((file) => file.name).join(', ')}</p>}
         <div className="form-actions"><a className="secondary-button" href={`${BASE}/approval/list.do?mode=0`}>취소</a><button className="primary-button">{edit ? '수정 완료' : '등록 완료'}</button></div>
       </form>
@@ -163,18 +163,27 @@ export function ApprovalDetail({ route, csrf, navigate }) {
     const body = new URLSearchParams({ approval_no: id, approval_status: status, comment, [csrf.parameterName]: csrf.token })
     setSaving(true)
     setError('')
-    const response = await fetch(`${BASE}/approval/updateComment.do`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body })
-    if (!response.ok) setError((await response.text()) || '처리하지 못했습니다.')
-    else { setComment(''); await load() }
-    setSaving(false)
+    try {
+      const response = await authenticatedFetch('/approval/updateComment.do', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body })
+      if (!response.ok) setError((await response.text()) || '처리하지 못했습니다.')
+      else { setComment(''); await load() }
+    } catch (reason) {
+      setError(reason.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function remove() {
     if (!window.confirm('문서를 삭제하시겠습니까?')) return
     const body = new URLSearchParams({ approval_no: id, [csrf.parameterName]: csrf.token })
-    const response = await fetch(`${BASE}/approval/delete.do`, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body })
-    if (response.ok) navigate(`${BASE}/approval/list.do?mode=0`)
-    else setError('문서를 삭제하지 못했습니다.')
+    try {
+      const response = await authenticatedFetch('/approval/delete.do', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' }, body })
+      if (response.ok) navigate(`${BASE}/approval/list.do?mode=0`)
+      else setError('문서를 삭제하지 못했습니다.')
+    } catch (reason) {
+      setError(reason.message)
+    }
   }
 
   if (error && !data) return <PageState message={error}/>

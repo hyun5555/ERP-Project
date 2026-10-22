@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.UUID;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -17,12 +16,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.WebDataBinder;
 
+import com.erp.service.AttachmentStorage;
 import com.erp.service.NoticeService;
 import com.erp.vo.noticeVO;
 import com.erp.vo.userVO;
@@ -32,11 +34,18 @@ public class NoticeController {
 
 	private final NoticeService noticeService;
 	private final Path uploadDirectory;
+	private final AttachmentStorage attachments;
 
-	public NoticeController(NoticeService noticeService,
+	public NoticeController(NoticeService noticeService, AttachmentStorage attachments,
 			@Value("${erp.upload-dir}") String uploadDirectory) {
 		this.noticeService = noticeService;
+		this.attachments = attachments;
 		this.uploadDirectory = Path.of(uploadDirectory).toAbsolutePath().normalize();
+	}
+
+	@InitBinder
+	public void noticeFields(WebDataBinder binder) {
+		binder.setAllowedFields("notice_title", "notice_content", "is_important", "is_main");
 	}
 
 	@GetMapping("/notice/list.do")
@@ -85,20 +94,25 @@ public class NoticeController {
 			@RequestParam(name = "notice_team", required = false) String[] teams,
 			@RequestParam(name = "fileInput", required = false) MultipartFile attachment,
 			HttpSession session) throws IOException {
-		store(attachment, notice);
+		notice.setFname(null);
+		notice.setPname(null);
+		AttachmentStorage.StoredFile stored = attachments.store(attachment);
+		if (stored != null) {
+			notice.setFname(stored.originalName());
+			notice.setPname(stored.storedName());
+		}
 		try {
 			int noticeNo = noticeService.createNotice(notice, teams, loginUser(session));
 			return "redirect:/notice/view.do?notice_no=" + noticeNo;
 		} catch (RuntimeException exception) {
-			deleteStored(notice);
+			if (stored != null) attachments.deleteIfUnreferenced(stored.storedName());
 			throw exception;
 		}
 	}
 
 	@PostMapping("/notice/delete.do")
 	public String deleteNotice(@RequestParam("notice_no") int noticeNo, HttpSession session) {
-		noticeVO notice = noticeService.deleteNotice(noticeNo, loginUser(session));
-		deleteStored(notice);
+		noticeService.deleteNotice(noticeNo, loginUser(session));
 		return "redirect:/notice/list.do";
 	}
 
@@ -107,31 +121,6 @@ public class NoticeController {
 	@ExceptionHandler(IllegalArgumentException.class)
 	public String badRequest(IllegalArgumentException exception) {
 		return exception.getMessage();
-	}
-
-	private void store(MultipartFile attachment, noticeVO notice) throws IOException {
-		if (attachment == null || attachment.isEmpty()) {
-			return;
-		}
-		Files.createDirectories(uploadDirectory);
-		String savedName = UUID.randomUUID().toString();
-		attachment.transferTo(uploadDirectory.resolve(savedName));
-		notice.setFname(attachment.getOriginalFilename());
-		notice.setPname(savedName);
-	}
-
-	private void deleteStored(noticeVO notice) {
-		if (notice.getPname() == null || notice.getPname().isBlank()) {
-			return;
-		}
-		try {
-			Path path = uploadDirectory.resolve(notice.getPname()).normalize();
-			if (path.startsWith(uploadDirectory)) {
-				Files.deleteIfExists(path);
-			}
-		} catch (IOException ignored) {
-			// DB 처리는 끝났으며, 남은 고아 파일은 유지보수 작업에서 제거한다.
-		}
 	}
 
 	private static userVO loginUser(HttpSession session) {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { BASE } from '../api'
+import { authenticatedFetch } from '../api'
 import { Icon } from '../ui'
+import { consumeAnswer } from './stream'
 
 const WELCOME = {
   id: 'welcome',
@@ -35,7 +36,7 @@ export function ChatPanel({ close, csrf }) {
     abortRef.current = new AbortController()
 
     try {
-      const response = await fetch(`${BASE}/api/ai/chat`, {
+      const response = await authenticatedFetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -46,22 +47,7 @@ export function ChatPanel({ close, csrf }) {
         signal: abortRef.current.signal
       })
       if (!response.ok) throw new Error(await response.json().then((body) => body.message).catch(() => '질문을 처리하지 못했습니다.'))
-      if (!response.body) throw new Error('스트리밍 응답을 열지 못했습니다.')
-
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-      while (true) {
-        const { value, done } = await reader.read()
-        buffer += decoder.decode(value || new Uint8Array(), { stream: !done })
-        const frames = buffer.split(/\r?\n\r?\n/)
-        buffer = frames.pop() || ''
-        frames.forEach((frame) => handleEvent(frame, answerId, setMessages, setError))
-        if (done) {
-          if (buffer.trim()) handleEvent(buffer, answerId, setMessages, setError)
-          break
-        }
-      }
+      await consumeAnswer(response, (event, payload) => handleEvent(event, payload, answerId, setMessages, setError))
     } catch (caught) {
       if (caught.name !== 'AbortError') {
         const text = caught.message || '로컬 AI가 응답하지 않습니다.'
@@ -90,12 +76,7 @@ export function ChatPanel({ close, csrf }) {
   )
 }
 
-function handleEvent(frame, answerId, setMessages, setError) {
-  const lines = frame.split(/\r?\n/)
-  const event = lines.find((line) => line.startsWith('event:'))?.slice(6).trim()
-  const data = lines.filter((line) => line.startsWith('data:')).map((line) => line.slice(5).trimStart()).join('\n')
-  if (!event || !data) return
-  const payload = JSON.parse(data)
+function handleEvent(event, payload, answerId, setMessages, setError) {
   if (event === 'token') appendAnswer(answerId, payload.text, setMessages)
   if (event === 'done') {
     const metric = `첫 응답 ${payload.firstTokenMs}ms · 전체 ${payload.durationMs}ms · ${payload.model}`

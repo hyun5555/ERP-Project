@@ -1,0 +1,15 @@
+{
+  "backup": "/Users/sonhyeon-a/workspace/ERP-Project/.local-dev/backups/20261006T034547Z-903e5d",
+  "restore_root": "/Users/sonhyeon-a/workspace/ERP-Project/.local-dev/restore-isolation-final",
+  "schema_rows_files_match": true,
+  "source_unchanged": true,
+  "restore_import_account_removed": true,
+  "seconds": 7.974,
+  "metadata_statistics_expiry": 0,
+  "mysql_binary_mode": true,
+  "mysql_client_local_commands_rejected": true,
+  "global_client_and_app_environment_overrides_rejected": true,
+  "environment_override_attachment_download_matches": true,
+  "backup_directory_symlink_rejected_before_app_stop": true,
+  "restore_stopped_after_verification": true
+}

@@ -1,17 +1,37 @@
 export const BASE = '/ERP'
 
-export async function getJson(path) {
-  const response = await fetch(`${BASE}${path}`, { headers: { Accept: 'application/json' } })
-  if (response.redirected || !response.headers.get('content-type')?.includes('application/json')) {
-    window.location.replace(`${BASE}/login/login.do`)
-    throw new Error('로그인이 필요합니다.')
+export async function authenticatedFetch(path, options) {
+  const response = await fetch(`${BASE}${path}`, options)
+  if (response.status === 401 || (response.redirected && new URL(response.url).pathname === `${BASE}/login/login.do`)) {
+    requireLogin()
   }
+  if (response.status === 403) {
+    // CSRF rejects an expired session before Spring can redirect to login.
+    const session = await fetch(`${BASE}/api/session`, { headers: { Accept: 'application/json' } })
+    if (session.ok && (await session.json()).authenticated === false) requireLogin()
+  }
+  if (response.ok && options?.method && !['GET', 'HEAD'].includes(options.method.toUpperCase()) && /^\/(approval|notice|api\/(approvals|notices))(\/|$)/.test(path)) notifyDashboardChange()
+  return response
+}
+
+export function notifyDashboardChange() {
+  window.dispatchEvent(new Event('erp:dashboard-changed'))
+}
+
+function requireLogin() {
+  window.location.replace(`${BASE}/login/login.do`)
+  throw new Error('로그인이 필요합니다.')
+}
+
+export async function getJson(path) {
+  const response = await authenticatedFetch(path, { headers: { Accept: 'application/json' } })
   if (!response.ok) throw new Error(await errorMessage(response, '데이터를 불러오지 못했습니다.'))
+  if (!response.headers.get('content-type')?.includes('application/json')) throw new Error('데이터를 불러오지 못했습니다.')
   return response.json()
 }
 
 export async function sendJson(path, method, body, csrf) {
-  const response = await fetch(`${BASE}${path}`, {
+  const response = await authenticatedFetch(path, {
     method,
     headers: {
       'Content-Type': 'application/json',

@@ -29,17 +29,17 @@ AiService
 
 ## 3. 설정과 실행
 
-기본값은 Ollama의 `qwen3:4b` 모델이다. 환경 변수로 서버, 모델, 추론 모드, 시간 제한을 바꿀 수 있다.
+2026-10-06부터 기본값은 Ollama의 `qwen3.5:2b`, `think=false`다. 동일 질문 반복 비교에서 단순 공지·결재 사실을 확인하고 지연을 측정해 선정했다. [최신 AI 품질·브라우저 기록](ai-quality-browser-flows.md)에 근거와 재현 방법을 정리했다. 아래 2026-09-23 측정은 당시 모델의 역사적 기준값으로 보존한다. 환경 변수로 서버, 모델, 추론 모드, 시간 제한을 바꿀 수 있다.
 
 ```properties
 ERP_AI_BASE_URL=http://localhost:11434
-ERP_AI_MODEL=qwen3:4b
+ERP_AI_MODEL=qwen3.5:2b
 ERP_AI_THINK=false
 ERP_AI_TIMEOUT_SECONDS=60
 ```
 
 ```bash
-ollama pull qwen3:4b
+ollama pull qwen3.5:2b
 ollama serve
 ./mvnw spring-boot:run
 ```
