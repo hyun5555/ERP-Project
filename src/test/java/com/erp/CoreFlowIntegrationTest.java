@@ -1521,6 +1521,150 @@ class CoreFlowIntegrationTest {
 		}
 	}
 
+	@Test
+	@Order(45)
+	void aiUsesCurrentDepartmentAfterAnAdminChangeWithoutReplacingTheLoginCookie() throws Exception {
+		String employee = insertEmployee(false, "재직");
+		String prefix = uniqueTitle("AI 부서 이동");
+		String developmentTitle = prefix + " 개발 자료";
+		String designTitle = prefix + " 디자인 자료";
+		String companyTitle = prefix + " 전사 자료";
+		List<Integer> notices = List.of(insertNotice(developmentTitle, "100"),
+				insertNotice(designTitle, "200"), insertNotice(companyTitle, "999"));
+		AtomicReference<String> prompt = new AtomicReference<>();
+		doAnswer(invocation -> {
+			prompt.set(invocation.getArgument(0));
+			Consumer<String> consumer = invocation.getArgument(1);
+			consumer.accept("권한 확인 답변");
+			return new GenerationStats("fake-model", 1, 2, 3);
+		}).when(localLlmClient).generate(anyString(), any());
+		try {
+			HttpClient admin = authenticatedClient("admin");
+			HttpClient sameLogin = authenticatedClient(employee);
+			CookieManager cookies = (CookieManager) sameLogin.cookieHandler().orElseThrow();
+			String sessionId = cookies.getCookieStore().getCookies().stream()
+					.filter(cookie -> "JSESSIONID".equals(cookie.getName())).findFirst().orElseThrow().getValue();
+			String question = json.writeValueAsString(Map.of("question", "공지 '" + prefix + "' 요약해줘"));
+			HttpResponse<String> before = sendJson(sameLogin, "POST", "/api/ai/chat", question);
+			assertThat(before.statusCode()).isEqualTo(200);
+			assertThat(before.body()).contains("event:token", "event:done", "fake-model");
+			assertThat(prompt.get()).contains(developmentTitle, companyTitle).doesNotContain(designTitle);
+
+			String moved = employeeUpdate(false, "재직").replace("\"team\":\"개발\"", "\"team\":\"디자인\"");
+			assertThat(sendJson(admin, "PUT", "/api/users/" + employee, moved).statusCode()).isEqualTo(200);
+			assertThat(get(sameLogin, "/api/session").body()).contains("\"authenticated\":true");
+			HttpResponse<String> after = sendJson(sameLogin, "POST", "/api/ai/chat", question);
+			assertThat(after.statusCode()).isEqualTo(200);
+			assertThat(after.body()).contains("event:token", "event:done", "fake-model");
+			assertThat(prompt.get()).contains(designTitle, companyTitle).doesNotContain(developmentTitle);
+			assertThat(cookies.getCookieStore().getCookies()).anySatisfy(cookie -> {
+				assertThat(cookie.getName()).isEqualTo("JSESSIONID");
+				assertThat(cookie.getValue()).isEqualTo(sessionId);
+			});
+
+			clearInvocations(localLlmClient);
+			HttpResponse<String> previousDepartment = sendJson(sameLogin, "POST", "/api/ai/chat",
+					json.writeValueAsString(Map.of("question", "공지 " + notices.getFirst() + " 내용 알려줘")));
+			assertThat(previousDepartment.body()).contains("열람 가능한 공지가 없습니다", "context-only", "event:done")
+					.doesNotContain(developmentTitle, "fake-model");
+			verify(localLlmClient, never()).generate(anyString(), any());
+		} finally {
+			for (int notice : notices) jdbcTemplate.update("delete from notice where notice_no=?", notice);
+			jdbcTemplate.update("delete from user where usernum=?", employee);
+		}
+	}
+
+	@Test
+	@Order(46)
+	void aiSourcesUseCurrentAccountStateAndExcludeLegacySelfApprovalLines() {
+		String employee = insertEmployee(false, "재직");
+		String prefix = uniqueTitle("AI 현재 계정");
+		int development = insertNotice(prefix + " 개발", "100");
+		int design = insertNotice(prefix + " 디자인", "200");
+		int company = insertNotice(prefix + " 전사", "999");
+		int approval = approvalService.createApproval(draft(prefix), "2005004", List.of(), List.of(employee));
+		userVO stale = loginMapper.findByUsernum(employee);
+		stale.setTeam("디자인");
+		stale.setAuthority(true);
+		try {
+			assertThat(noticeService.findForAi(stale, null, prefix)).extracting(noticeVO::getNotice_no)
+					.containsExactly(company, development);
+			assertThat(approvalService.findPendingForAi(employee, approval, "")).hasSize(1);
+
+			jdbcTemplate.update("update user set authority=true where usernum=?", employee);
+			stale.setAuthority(false);
+			assertThat(noticeService.findForAi(stale, null, prefix)).extracting(noticeVO::getNotice_no)
+					.containsExactly(company, design, development);
+			assertThat(approvalService.findPendingForAi(employee, approval, "")).isEmpty();
+
+			jdbcTemplate.update("update user set authority=false, user_status='퇴직' where usernum=?", employee);
+			assertThat(noticeService.findForAi(stale, null, prefix)).isEmpty();
+			assertThat(approvalService.findPendingForAi(employee, approval, "")).isEmpty();
+
+			jdbcTemplate.update("update user set user_status='재직' where usernum=?", employee);
+			jdbcTemplate.update("update approval set usernum=? where approval_no=?", employee, approval);
+			assertThat(approvalService.findPendingForAi(employee, approval, "")).isEmpty();
+			assertThat(jdbcTemplate.queryForObject("select count(*) from approval_line where approval_no=?",
+					Integer.class, approval)).isEqualTo(1);
+		} finally {
+			jdbcTemplate.update("delete from approval where approval_no=?", approval);
+			for (int notice : List.of(development, design, company)) jdbcTemplate.update("delete from notice where notice_no=?", notice);
+			jdbcTemplate.update("delete from user where usernum=?", employee);
+		}
+	}
+
+	@Test
+	@Order(47)
+	void aiAppendsOnlyMissingSourceLabelsAfterSuccessfulModelCompletion() throws Exception {
+		String noticeTitle = uniqueTitle("AI 출처 공지 999999");
+		String approvalTitle = uniqueTitle("AI 출처 품의 999999");
+		int notice = insertNotice(noticeTitle, "100");
+		int approval = approvalService.createApproval(draft(approvalTitle), "2005004", List.of(), List.of("2005002"));
+		String noticeSource = "공지 " + notice + "번 " + noticeTitle;
+		String approvalSource = "결재 " + approval + "번 " + approvalTitle;
+		String question = "공지 '" + noticeTitle + "' 3줄로, 결재 '" + approvalTitle + "' 3줄로 요약해줘";
+		userVO employee = loginMapper.findByUsernum("2005002");
+		AtomicReference<String> modelAnswer = new AtomicReference<>("자료에 근거한 본문");
+		doAnswer(invocation -> {
+			Consumer<String> consumer = invocation.getArgument(1);
+			consumer.accept(modelAnswer.get());
+			return new GenerationStats("fake-model", 1, 2, 3);
+		}).when(localLlmClient).generate(anyString(), any());
+		try {
+			StringBuilder missing = new StringBuilder();
+			aiService.answer(employee, question, missing::append);
+			assertThat(missing.toString()).isEqualTo("자료에 근거한 본문\n\n[조회 자료]\n" + noticeSource + "\n" + approvalSource);
+
+			modelAnswer.set(noticeSource + ": 공지 사실\n" + approvalSource + ": 결재 사실");
+			StringBuilder complete = new StringBuilder();
+			aiService.answer(employee, question, complete::append);
+			assertThat(complete.toString()).isEqualTo(modelAnswer.get()).doesNotContain("[조회 자료]");
+
+			modelAnswer.set("**공지 " + notice + " 번 `" + noticeTitle + "`**: 공지 사실\n# **결재"
+					+ approval + "번" + approvalTitle + "**: 결재 사실");
+			StringBuilder formatted = new StringBuilder();
+			aiService.answer(employee, question, formatted::append);
+			assertThat(formatted.toString()).isEqualTo(modelAnswer.get()).doesNotContain("[조회 자료]");
+
+			modelAnswer.set(noticeSource + ": 공지 사실");
+			StringBuilder partial = new StringBuilder();
+			aiService.answer(employee, question, partial::append);
+			assertThat(partial.toString()).isEqualTo(modelAnswer.get() + "\n\n[조회 자료]\n" + approvalSource);
+
+			doAnswer(invocation -> {
+				Consumer<String> consumer = invocation.getArgument(1);
+				consumer.accept("중단된 본문");
+				throw new IOException("model stream ended without completion");
+			}).when(localLlmClient).generate(anyString(), any());
+			StringBuilder failed = new StringBuilder();
+			assertThatThrownBy(() -> aiService.answer(employee, question, failed::append)).isInstanceOf(IOException.class);
+			assertThat(failed.toString()).isEqualTo("중단된 본문").doesNotContain("[조회 자료]", noticeSource, approvalSource);
+		} finally {
+			jdbcTemplate.update("delete from approval where approval_no=?", approval);
+			jdbcTemplate.update("delete from notice where notice_no=?", notice);
+		}
+	}
+
 	private Set<String> uploadNames() throws IOException {
 		Path root = Files.createDirectories(Path.of(uploadDirectory));
 		try (var files = Files.list(root)) {

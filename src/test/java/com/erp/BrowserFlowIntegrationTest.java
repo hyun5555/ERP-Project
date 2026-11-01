@@ -3,17 +3,22 @@ package com.erp;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -36,6 +41,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.mysql.MySQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+import com.sun.net.httpserver.HttpServer;
+
 @Testcontainers
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -43,6 +50,8 @@ import org.testcontainers.utility.MountableFile;
 class BrowserFlowIntegrationTest {
 
     private static final Path UPLOADS = temporaryUploads();
+    private static final AtomicReference<CountDownLatch> MODEL_COMPLETION = new AtomicReference<>();
+    private static final HttpServer MODEL = modelServer();
 
     @Container
     static final MySQLContainer MYSQL = new MySQLContainer("mysql:8.4")
@@ -58,6 +67,8 @@ class BrowserFlowIntegrationTest {
         registry.add("spring.datasource.username", MYSQL::getUsername);
         registry.add("spring.datasource.password", MYSQL::getPassword);
         registry.add("erp.upload-dir", UPLOADS::toString);
+        registry.add("erp.ai.base-url", () -> "http://127.0.0.1:" + MODEL.getAddress().getPort());
+        registry.add("erp.ai.model", () -> "browser-fixture");
     }
 
     @LocalServerPort
@@ -81,6 +92,10 @@ class BrowserFlowIntegrationTest {
         jdbc.update("UPDATE user SET authority=TRUE WHERE usernum=?", "e2e-" + suffix + "-admin");
         createUser("e2e-" + suffix + "-form-a", "E2E수정A" + suffix, "사원", 400, encodedPassword);
         createUser("e2e-" + suffix + "-form-b", "E2E수정B" + suffix, "대리", 300, encodedPassword);
+        jdbc.update("INSERT INTO notice (notice_title,notice_content,usernum) VALUES (?,?,?)",
+                "브라우저 AI 공지 999999 " + suffix, "시연 자료는 금요일까지 제출합니다.", "e2e-" + suffix + "-admin");
+        jdbc.update("INSERT INTO notice_team (notice_no,notice_team) SELECT notice_no,'999' FROM notice WHERE notice_title=?",
+                "브라우저 AI 공지 999999 " + suffix);
 
         int repeats = Integer.parseInt(System.getenv().getOrDefault("ERP_E2E_REPEAT", "1"));
         assertThat(repeats).isBetween(1, 20);
@@ -123,6 +138,33 @@ class BrowserFlowIntegrationTest {
         }
     }
 
+    private static HttpServer modelServer() {
+        try {
+            HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+            server.createContext("/api/generate", exchange -> {
+                try (exchange) {
+                    String prompt = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+                    if (prompt.contains("모델 오류 유도")) { exchange.sendResponseHeaders(503, -1); return; }
+                    CountDownLatch completion = new CountDownLatch(1);
+                    MODEL_COMPLETION.set(completion);
+                    exchange.getResponseHeaders().set("Content-Type", "application/x-ndjson");
+                    exchange.sendResponseHeaders(200, 0);
+                    exchange.getResponseBody().write("{\"response\":\"시연 자료는 \",\"done\":false}\n".getBytes(StandardCharsets.UTF_8));
+                    exchange.getResponseBody().flush();
+                    try {
+                        if (!completion.await(15, TimeUnit.SECONDS)) return;
+                    } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); return; }
+                    exchange.getResponseBody().write("{\"response\":\"금요일까지 제출합니다.\",\"done\":true,\"eval_count\":9}\n".getBytes(StandardCharsets.UTF_8));
+                }
+            });
+            server.start();
+            return server;
+        } catch (IOException failure) { throw new IllegalStateException(failure); }
+    }
+
+    @AfterAll
+    static void stopModel() { MODEL.stop(0); }
+
     @TestConfiguration(proxyBeanMethods = false)
     static class BrowserFixtures {
         @Bean
@@ -136,6 +178,18 @@ class BrowserFlowIntegrationTest {
     @RestController
     static class SessionTimeoutProbe {
         private final Map<String, HttpSession> sessions = new ConcurrentHashMap<>();
+
+        @GetMapping(value = "/api/session", params = "e2eAi=complete")
+        Map<String, Boolean> completeModel(HttpServletRequest request) {
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("loginUser") == null) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+            }
+            CountDownLatch completion = MODEL_COMPLETION.get();
+            if (completion == null) throw new ResponseStatusException(HttpStatus.CONFLICT);
+            completion.countDown();
+            return Map.of("completed", true);
+        }
 
         @GetMapping(value = "/api/session", params = "e2eTimeout=arm")
         Map<String, String> arm(HttpServletRequest request) {

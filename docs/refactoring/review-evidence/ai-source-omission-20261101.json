@@ -1,0 +1,11 @@
+{
+  "scope": "Observed native Chromium probe before server source fallback; synthetic ERP.sql fixture on a new dedicated native environment",
+  "requestedModel": "qwen3.5:2b",
+  "question": "공지 \"ERP 개발 환경 안내\" 요약해줘",
+  "observedAnswer": "공지 \"ERP 개발 환경 안내\" 요약해줘\n\nSpring Boot 전환 개발 환경이 준비되었습니다.",
+  "factMatched": true,
+  "documentNumberMissing": true,
+  "probeOutcome": "Assertion failed for required source label. This was outside the 8-question model-comparison dataset.",
+  "fix": "After successful generation, append only missing authorized source labels as [조회 자료]; leave the model text and error handling intact.",
+  "limitation": "Source listing records the documents retrieved by the server; it does not prove every generated claim is correct."
+}

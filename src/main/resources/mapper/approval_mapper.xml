@@ -315,7 +315,10 @@
 		FROM approval a
 		JOIN approval_line al ON a.approval_no = al.approval_no
 		LEFT JOIN user u ON a.usernum = u.usernum
+		JOIN user approver ON approver.usernum = #{usernum}
+			AND approver.user_status = '재직' AND approver.authority = FALSE
 		WHERE al.approval_target = #{usernum}
+		AND a.usernum != approver.usernum
 		AND al.approval_status = '대기'
 		AND a.document_status IN ('대기중', '진행중')
 		<if test="approvalNo != null">AND a.approval_no = #{approvalNo}</if>

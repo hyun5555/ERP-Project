@@ -2,6 +2,7 @@ package com.erp.service;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -86,8 +87,23 @@ public class AiService {
 			return directAnswer(message.toString().trim(), started, tokenConsumer);
 		}
 
+		StringBuilder answer = new StringBuilder();
 		GenerationStats stats = llmClient.generate(
-				prompt(normalized, noticeScope, approvalScope, notices, approvals), tokenConsumer);
+				prompt(normalized, noticeScope, approvalScope, notices, approvals), token -> {
+					answer.append(token);
+					tokenConsumer.accept(token);
+				});
+		List<String> sources = new ArrayList<>();
+		for (noticeVO notice : notices) {
+			sources.add("공지 " + notice.getNotice_no() + "번 " + compact(notice.getNotice_title(), 120));
+		}
+		for (approvalVO approval : approvals) {
+			sources.add("결재 " + approval.getApproval_no() + "번 " + compact(approval.getApproval_title(), 120));
+		}
+		String generated = answer.toString().replaceAll("[\\s*`#]", "");
+		List<String> missing = sources.stream()
+				.filter(source -> !generated.contains(source.replaceAll("[\\s*`#]", ""))).toList();
+		if (!missing.isEmpty()) tokenConsumer.accept("\n\n[조회 자료]\n" + String.join("\n", missing));
 		log.info("local_ai_completed user={} model={} first_token_ms={} duration_ms={} tokens={}",
 				user.getUsernum(), stats.model(), stats.firstTokenMs(), stats.durationMs(), stats.evaluatedTokens());
 		return stats;
@@ -103,7 +119,8 @@ public class AiService {
 	}
 
 	private static Search search(String question, String domain) {
-		Matcher number = Pattern.compile("(?:" + domain + ")\\s*(?:번호\\s*)?#?\\s*(\\d+)(?:\\s*번)?").matcher(question);
+		Matcher number = Pattern.compile("(?:" + domain + ")\\s*(?:번호\\s*)?#?\\s*(\\d+)(?:\\s*번)?")
+				.matcher(QUOTED_TITLE.matcher(question).replaceAll("\"\""));
 		if (number.find()) {
 			try {
 				return new Search(Integer.valueOf(number.group(1)), "");

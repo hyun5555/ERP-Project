@@ -1,0 +1,50 @@
+{
+  "verifiedAt": "2026-11-01T00:21:10.636Z",
+  "scope": "Real native WAR + dedicated MySQL + Ollama qwen3.5:2b + Chromium UI. Synthetic seed data only; no .local-dev/source mutation.",
+  "browser": "153.0.8010.12",
+  "warSha256": "aa336910e547732b78cef3029751374c79cdc29004d0eb51f97ecd7a35f7181c",
+  "passed": 5,
+  "pageErrors": [],
+  "results": [
+    {
+      "question": "공지 \"ERP 개발 환경 안내\" 요약해줘",
+      "answer": "공지 1 번 ERP 개발 환경 안내: Spring Boot 전환 개발 환경이 준비되었습니다.",
+      "metrics": "첫 응답 236ms · 전체 624ms · qwen3.5:2b",
+      "status": 200,
+      "contentType": "text/event-stream",
+      "rawSse": "event:token\ndata:{\"text\":\"공지\"}\n\nevent:token\ndata:{\"text\":\" 1\"}\n\nevent:token\ndata:{\"text\":\" 번\"}\n\nevent:token\ndata:{\"text\":\" ERP\"}\n\nevent:token\ndata:{\"text\":\" 개발\"}\n\nevent:token\ndata:{\"text\":\" 환경\"}\n\nevent:token\ndata:{\"text\":\" 안내\"}\n\nevent:token\ndata:{\"text\":\":\"}\n\nevent:token\ndata:{\"text\":\" Spring\"}\n\nevent:token\ndata:{\"text\":\" Boot\"}\n\nevent:token\ndata:{\"text\":\" 전환\"}\n\nevent:token\ndata:{\"text\":\" 개발\"}\n\nevent:token\ndata:{\"text\":\" 환경\"}\n\nevent:token\ndata:{\"text\":\"이\"}\n\nevent:token\ndata:{\"text\":\" 준비\"}\n\nevent:token\ndata:{\"text\":\"되었습니다\"}\n\nevent:token\ndata:{\"text\":\".\"}\n\nevent:done\ndata:{\"firstTokenMs\":236,\"evaluatedTokens\":19,\"durationMs\":624,\"model\":\"qwen3.5:2b\"}\n\n"
+    },
+    {
+      "question": "결재 \"Spring Boot 전환 검토\" 알려줘",
+      "answer": "결재 1 번 Spring Boot 전환 검토 구분: 기안서 / 상태: 대기중 / 작성일: 2026-11-01 09:10:08\n내용: 기존 ERP 시스템의 Spring Boot 전환을 검토합니다.",
+      "metrics": "첫 응답 183ms · 전체 1369ms · qwen3.5:2b",
+      "status": 200,
+      "contentType": "text/event-stream",
+      "rawSse": "event:token\ndata:{\"text\":\"결\"}\n\nevent:token\ndata:{\"text\":\"재\"}\n\nevent:token\ndata:{\"text\":\" 1\"}\n\nevent:token\ndata:{\"text\":\" 번\"}\n\nevent:token\ndata:{\"text\":\" Spring\"}\n\nevent:token\ndata:{\"text\":\" Boot\"}\n\nevent:token\ndata:{\"text\":\" 전환\"}\n\nevent:token\ndata:{\"text\":\" 검토\"}\n\nevent:token\ndata:{\"text\":\" 구분\"}\n\nevent:token\ndata:{\"text\":\":\"}\n\nevent:token\ndata:{\"text\":\" 기\"}\n\nevent:token\ndata:{\"text\":\"안\"}\n\nevent:token\ndata:{\"text\":\"서\"}\n\nevent:token\ndata:{\"text\":\" /\"}\n\nevent:token\ndata:{\"text\":\" 상태\"}\n\nevent:token\ndata:{\"text\":\":\"}\n\nevent:token\ndata:{\"text\":\" 대기\"}\n\nevent:token\ndata:{\"text\":\"중\"}\n\nevent:token\ndata:{\"text\":\" /\"}\n\nevent:token\ndata:{\"text\":\" 작성\"}\n\nevent:token\ndata:{\"text\":\"일\"}\n\nevent:token\ndata:{\"text\":\":\"}\n\nevent:token\ndata:{\"text\":\" 2\"}\n\nevent:token\ndata:{\"text\":\"0\"}\n\nevent:token\ndata:{\"text\":\"2\"}\n\nevent:token\ndata:{\"text\":\"6\"}\n\nevent:token\ndata:{\"text\":\"-\"}\n\nevent:token\ndata:{\"text\":\"1\"}\n\nevent:token\ndata:{\"text\":\"1\"}\n\nevent:token\ndata:{\"text\":\"-\"}\n\nevent:token\ndata:{\"text\":\"0\"}\n\nevent:token\ndata:{\"text\":\"1\"}\n\nevent:token\ndata:{\"text\":\" 0\"}\n\nevent:token\ndata:{\"text\":\"9\"}\n\nevent:token\ndata:{\"text\":\":\"}\n\nevent:token\ndata:{\"text\":\"1\"}\n\nevent:token\ndata:{\"text\":\"0\"}\n\nevent:token\ndata:{\"text\":\":\"}\n\nevent:token\ndata:{\"text\":\"0\"}\n\nevent:token\ndata:{\"text\":\"8\"}\n\nevent:token\ndata:{\"text\":\"\\n내용\"}\n\nevent:token\ndata:{\"text\":\":\"}\n\nevent:token\ndata:{\"text\":\" 기존\"}\n\nevent:token\ndata:{\"text\":\" ERP\"}\n\nevent:token\ndata:{\"text\":\" 시스템\"}\n\nevent:token\ndata:{\"text\":\"의\"}\n\nevent:token\ndata:{\"text\":\" Spring\"}\n\nevent:token\ndata:{\"text\":\" Boot\"}\n\nevent:token\ndata:{\"text\":\" 전환\"}\n\nevent:token\ndata:{\"text\":\"을\"}\n\nevent:token\ndata:{\"text\":\" 검토\"}\n\nevent:token\ndata:{\"text\":\"합니다\"}\n\nevent:token\ndata:{\"text\":\".\"}\n\nevent:done\ndata:{\"firstTokenMs\":183,\"evaluatedTokens\":58,\"durationMs\":1369,\"model\":\"qwen3.5:2b\"}\n\n"
+    },
+    {
+      "question": "공지 999999 내용 알려줘",
+      "answer": "질문에 일치하는 열람 가능한 공지가 없습니다.",
+      "metrics": "첫 응답 1ms · 전체 1ms · context-only",
+      "status": 200,
+      "contentType": "text/event-stream",
+      "rawSse": "event:token\ndata:{\"text\":\"질문에 일치하는 열람 가능한 공지가 없습니다.\"}\n\nevent:done\ndata:{\"firstTokenMs\":1,\"evaluatedTokens\":0,\"durationMs\":1,\"model\":\"context-only\"}\n\n"
+    },
+    {
+      "question": "서울 날씨 알려줘",
+      "answer": "공지와 현재 내 순서인 결재 자료만 안내할 수 있습니다. 공지 또는 결재 질문을 입력해 주세요.",
+      "metrics": "첫 응답 0ms · 전체 0ms · context-only",
+      "status": 200,
+      "contentType": "text/event-stream",
+      "rawSse": "event:token\ndata:{\"text\":\"공지와 현재 내 순서인 결재 자료만 안내할 수 있습니다. 공지 또는 결재 질문을 입력해 주세요.\"}\n\nevent:done\ndata:{\"firstTokenMs\":0,\"evaluatedTokens\":0,\"durationMs\":0,\"model\":\"context-only\"}\n\n"
+    },
+    {
+      "question": "공지 \"ERP 개발 환경 안내\" 3줄로 요약해줘",
+      "answer": "공지 1 번 ERP 개발 환경 안내: Spring Boot 전환 개발 환경이 준비되었습니다.",
+      "metrics": "첫 응답 158ms · 전체 523ms · qwen3.5:2b",
+      "status": 200,
+      "contentType": "text/event-stream",
+      "rawSse": "event:token\ndata:{\"text\":\"공지\"}\n\nevent:token\ndata:{\"text\":\" 1\"}\n\nevent:token\ndata:{\"text\":\" 번\"}\n\nevent:token\ndata:{\"text\":\" ERP\"}\n\nevent:token\ndata:{\"text\":\" 개발\"}\n\nevent:token\ndata:{\"text\":\" 환경\"}\n\nevent:token\ndata:{\"text\":\" 안내\"}\n\nevent:token\ndata:{\"text\":\":\"}\n\nevent:token\ndata:{\"text\":\" Spring\"}\n\nevent:token\ndata:{\"text\":\" Boot\"}\n\nevent:token\ndata:{\"text\":\" 전환\"}\n\nevent:token\ndata:{\"text\":\" 개발\"}\n\nevent:token\ndata:{\"text\":\" 환경\"}\n\nevent:token\ndata:{\"text\":\"이\"}\n\nevent:token\ndata:{\"text\":\" 준비\"}\n\nevent:token\ndata:{\"text\":\"되었습니다\"}\n\nevent:token\ndata:{\"text\":\".\"}\n\nevent:done\ndata:{\"firstTokenMs\":158,\"evaluatedTokens\":19,\"durationMs\":523,\"model\":\"qwen3.5:2b\"}\n\n"
+    }
+  ]
+}

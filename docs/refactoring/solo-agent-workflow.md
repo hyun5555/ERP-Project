@@ -89,6 +89,16 @@ Backend Architect(`/root/data_backend`), Frontend Developer(`/root/usability_fro
 
 의존성 감사 0건, Maven 80개 통과·선택 2개 생략, 브라우저 9개·Node 7개 통과다. 1천 건 API 9,900개·메시지 전달 1,800개·브라우저 360개 표본은 실패 0이며 요약 126개 그룹을 독립 재계산했다. 사용자 지시로 추가 규모를 중단하고 전용 환경을 모두 종료했으며 기본값도 1천 건으로 낮췄다. [정책·한계·실행 결과](data-usability-performance.md)에 남겼다.
 
+## 2026-11-01 포트폴리오 마감
+
+실제 AI Engineer(`/root/finish_ai_scope`)가 현재 DB 부서·권한 조회와 동일 로그인 쿠키의 HTTP 회귀를, Frontend Developer(`/root/finish_accessibility`)가 사원 링크·모바일 메뉴·브라우저 12개 흐름을 담당했다. Technical Writer(`/root/finish_portfolio_docs`)는 README의 팀/개인 기여 구분과 짧은 시연 자료를 정리했다. 각 담당은 소유 파일만 수정하고 빌드·DB·모델 제어는 하지 않았다.
+
+Application Security Engineer(`/root/finish_independent_review`)는 AI 계정 범위와 메뉴·패널·읽음 경계를 읽기 전용으로 검토했다. 모바일 메뉴 위를 덮는 패널과 메뉴에 가려진 메신저의 읽음 처리를 발견해 담당자가 수정했다. 주 에이전트가 최종 번들로 실제 메뉴·미읽음→읽음, Chromium 접근성 트리, HTTP/SSE를 실행했다. DOM 역할 조회가 inert를 제외한다고 가정한 초기 테스트 오류는 실제 접근성 트리 조회로 고쳤다. 정적 발견과 실행 검증을 구분해 기록했다.
+
+주 에이전트의 전체 회귀는 실제 모델 평가를 포함한 Maven 85개 중 84개 통과·성능 선택 실행 1개 생략, Node 7개·Chromium 12개·프런트 빌드·WAR 패키징 통과다. 실제 2B·9B 모델 평가는 선택 활성화해 32건을 실행하고 원문을 검토했다. 지정 사실·출처 검사는 통과했지만 2B의 답변 1건은 반복 요약을 포함해 한계로 남겼다. [최신 마감 상태](portfolio-readiness.md), [실제 모델 원문](../../performance/results/ai-quality-20261101-cited/README.md), [시연 자료](portfolio-demo.md)에 근거를 연결했다. 기존 native DB·첨부와 1천 건 성능 결과는 유지했다.
+
+native의 추가 질문에서 출처 누락을 발견해 AI Engineer가 정상 생성 뒤 누락 조회 라벨을 보완했다. 브라우저가 재현한 인용 제목 내부 숫자 오인과 독립 검토의 제목 뒤 요약 줄 수 오인도 고쳤다. 주 에이전트가 후속 검색·출처 회귀와 Chromium 12개를 다시 실행하고 최종 WAR의 실제 native 챗봇 5질문을 확인했다. 마지막 캡처 6장도 직접 열어 검사했다. [추가 질문 원문](review-evidence/ai-browser-real-20261101.json)에 가짜 모델과 실제 모델을 구분했다.
+
 ## 후속 요청 예
 
 “Backend Architect로 결재 수정 흐름을 보완하고 API Tester로 해당 회귀 테스트를 검증해줘. 기존 구조를 유지해줘.”

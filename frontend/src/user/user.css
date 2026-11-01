@@ -9,6 +9,7 @@
 .user-table tbody tr:hover { background: var(--surface-muted); }
 .user-table input { accent-color: var(--primary); }
 .user-name { display: flex; align-items: center; gap: 10px; }
+.user-name:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 4px; }
 .user-name > span:last-child { display: grid; gap: 4px; }
 .user-name small { color: var(--muted); font-size: 9px; }
 .user-status { display: inline-flex; align-items: center; justify-content: center; min-width: 58px; padding: 7px 10px; border-radius: 999px; background: var(--primary-soft); color: var(--primary); font-size: 10px; font-weight: 800; }

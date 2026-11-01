@@ -1,0 +1,579 @@
+{
+  "verifiedAt": "2026-11-01T00:22:54.511669+00:00",
+  "baseCommit": "256c73dae697c00d13bb34fe333bc6407ff9e751",
+  "workingTreeChanges": true,
+  "scope": "Current-department AI context, quoted title parsing, source fallback, employee keyboard links, mobile menu and messenger read boundaries, portfolio materials",
+  "fullMaven": {
+    "totals": {
+      "tests": 85,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    "suites": [
+      {
+        "suite": "com.erp.AiModelEvaluationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          {
+            "name": "compareSameAuthorizedQuestionsRepeatedly",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "suite": "com.erp.BrowserFlowIntegrationTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          {
+            "name": "chromiumRunsCoreUserFlowsAgainstIsolatedMySql",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "suite": "com.erp.CoreFlowIntegrationTest",
+        "tests": 47,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          {
+            "name": "reactShellAndLoginSessionAreAccessibleWithoutAuthentication",
+            "status": "passed"
+          },
+          {
+            "name": "protectedPageRedirectsToLogin",
+            "status": "passed"
+          },
+          {
+            "name": "invalidCredentialsAreRejected",
+            "status": "passed"
+          },
+          {
+            "name": "legacyPasswordIsUpgradedAndCorePagesOpen",
+            "status": "passed"
+          },
+          {
+            "name": "draftCreatesOrderedApprovalLines",
+            "status": "passed"
+          },
+          {
+            "name": "approvalsMoveDocumentFromPendingToProgressAndApproved",
+            "status": "passed"
+          },
+          {
+            "name": "rejectionEndsDocumentAndRequiresComment",
+            "status": "passed"
+          },
+          {
+            "name": "unauthorizedUserCannotApprove",
+            "status": "passed"
+          },
+          {
+            "name": "drafterAndApproverCanViewBeforeFinalApprovalAndEveryoneCanViewAfter",
+            "status": "passed"
+          },
+          {
+            "name": "invalidApproverRollsBackEntireDraft",
+            "status": "passed"
+          },
+          {
+            "name": "employeeManagementIsAdminOnlyAndDoesNotExposePassword",
+            "status": "passed"
+          },
+          {
+            "name": "adminCanCreateModifyAndDeleteEmployee",
+            "status": "passed"
+          },
+          {
+            "name": "noticeChangesAreAdminOnly",
+            "status": "passed"
+          },
+          {
+            "name": "anotherUserCannotModifyDraft",
+            "status": "passed"
+          },
+          {
+            "name": "approvalAttachmentRequiresDocumentAccess",
+            "status": "passed"
+          },
+          {
+            "name": "passwordChangeRejectsWrongCurrentPasswordAndUsesBcrypt",
+            "status": "passed"
+          },
+          {
+            "name": "reactFrontendApisReturnJsonWithoutSensitiveUserFields",
+            "status": "passed"
+          },
+          {
+            "name": "messengerPersistsUnreadStateAndBlocksNonParticipants",
+            "status": "passed"
+          },
+          {
+            "name": "localAiStreamsAuthorizedContextAndHandlesModelFailure",
+            "status": "passed"
+          },
+          {
+            "name": "concurrentDuplicateAndConflictingDecisionsHaveOneWinner",
+            "status": "passed"
+          },
+          {
+            "name": "failedDraftModificationAndResubmissionRestoreEntireDocument",
+            "status": "passed"
+          },
+          {
+            "name": "approvalAndDraftModificationCannotResetAnApprovedLine",
+            "status": "passed"
+          },
+          {
+            "name": "concurrentEmployeeRegistrationsAllocateDistinctNumbersFromSamePreview",
+            "status": "passed"
+          },
+          {
+            "name": "exhaustedEmployeeNumbersAreNotReusedAfterDeletion",
+            "status": "passed"
+          },
+          {
+            "name": "localAiUsesOnlyRequestedAuthorizedSourcesAndFindsTitlesBeforeLimiting",
+            "status": "passed"
+          },
+          {
+            "name": "demotionAndRetirementRevokeEveryExistingLoginAndRejectStaleServiceActors",
+            "status": "passed"
+          },
+          {
+            "name": "rolledBackRoleChangeAndOrdinaryProfileEditPreserveSessions",
+            "status": "passed"
+          },
+          {
+            "name": "deletingUnreferencedEmployeesRevokesSingleAndBulkSessions",
+            "status": "passed"
+          },
+          {
+            "name": "invalidApproversAreRejectedBeforeDraftCreationOrModificationAndAliasesAreCanonicalized",
+            "status": "passed"
+          },
+          {
+            "name": "legacySelfApprovalLineCannotBeDecidedThroughServiceOrHttp",
+            "status": "passed"
+          },
+          {
+            "name": "referencedEmployeeDeletionIsAtomicAndRetirementPreservesEveryBusinessRecord",
+            "status": "passed"
+          },
+          {
+            "name": "concurrentDocumentCreationPreventsDeletingItsAuthorWithoutLosingTheNewHistory",
+            "status": "passed"
+          },
+          {
+            "name": "adminChecksUseCurrentRowsEvenWhenTheOuterTransactionHasAnOlderSnapshot",
+            "status": "passed"
+          },
+          {
+            "name": "reloggingIntoAnotherAccountSurvivesPreviousAccountsRevocationAndCapturedSnapshot",
+            "status": "passed"
+          },
+          {
+            "name": "existingDatabaseHistoryMigrationPreservesRowsAndCanBeAppliedAgain",
+            "status": "passed"
+          },
+          {
+            "name": "attachmentReplacementDeletesOldBytesOnlyAfterCommitAndFailedUploadsAreCleaned",
+            "status": "passed"
+          },
+          {
+            "name": "attachmentReplacementRollbackRetainsOriginalFileAndMetadata",
+            "status": "passed"
+          },
+          {
+            "name": "noticeFileBindingCannotReferenceOrDeleteExistingFilesAndDeletionFollowsCommit",
+            "status": "passed"
+          },
+          {
+            "name": "blankAdminPasswordEditsPreserveHashAndLoginWhileRealChangesAreEncoded",
+            "status": "passed"
+          },
+          {
+            "name": "completedApprovalFilterUsesSameCountAndRowsOnEveryPage",
+            "status": "passed"
+          },
+          {
+            "name": "excessivePageOffsetsAreRejectedConsistentlyWithoutSqlErrors",
+            "status": "passed"
+          },
+          {
+            "name": "readBoundaryPreservesNewerAndOtherRoomMessagesAndIsIdempotent",
+            "status": "passed"
+          },
+          {
+            "name": "deletingOneDocumentRetainsAFileStillReferencedByAnotherBusinessRecord",
+            "status": "passed"
+          },
+          {
+            "name": "equalDepartmentAndLevelEmployeesHaveStableUniqueOrderingAcrossPages",
+            "status": "passed"
+          },
+          {
+            "name": "aiUsesCurrentDepartmentAfterAnAdminChangeWithoutReplacingTheLoginCookie",
+            "status": "passed"
+          },
+          {
+            "name": "aiSourcesUseCurrentAccountStateAndExcludeLegacySelfApprovalLines",
+            "status": "passed"
+          },
+          {
+            "name": "aiAppendsOnlyMissingSourceLabelsAfterSuccessfulModelCompletion",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "suite": "com.erp.LocalLlmClientTest",
+        "tests": 12,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          {
+            "name": "totalDeadlineAlsoStopsAnOpenBodyAfterHeadersAndToken",
+            "status": "passed"
+          },
+          {
+            "name": "doesNotReportInvalidOrIncompleteStreamsAsSuccess(String)[1]",
+            "status": "passed"
+          },
+          {
+            "name": "doesNotReportInvalidOrIncompleteStreamsAsSuccess(String)[2]",
+            "status": "passed"
+          },
+          {
+            "name": "doesNotReportInvalidOrIncompleteStreamsAsSuccess(String)[3]",
+            "status": "passed"
+          },
+          {
+            "name": "doesNotReportInvalidOrIncompleteStreamsAsSuccess(String)[4]",
+            "status": "passed"
+          },
+          {
+            "name": "doesNotReportInvalidOrIncompleteStreamsAsSuccess(String)[5]",
+            "status": "passed"
+          },
+          {
+            "name": "doesNotReportInvalidOrIncompleteStreamsAsSuccess(String)[6]",
+            "status": "passed"
+          },
+          {
+            "name": "doesNotReportInvalidOrIncompleteStreamsAsSuccess(String)[7]",
+            "status": "passed"
+          },
+          {
+            "name": "doesNotReportInvalidOrIncompleteStreamsAsSuccess(String)[8]",
+            "status": "passed"
+          },
+          {
+            "name": "interruptionCancelsAnOpenResponse",
+            "status": "passed"
+          },
+          {
+            "name": "streamsTokensBeforeCompletionAndRequiresDone",
+            "status": "passed"
+          },
+          {
+            "name": "rejectsHttpFailureWithoutPublishingErrorBody",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "suite": "com.erp.MessengerWebSocketIntegrationTest",
+        "tests": 23,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "cases": [
+          {
+            "name": "authenticatedUsersExchangeMessagesReadReceiptsAndRecoverHistoryAfterReconnect",
+            "status": "passed"
+          },
+          {
+            "name": "forbiddenSubscriptionsReturnStompError(String)[1]",
+            "status": "passed"
+          },
+          {
+            "name": "forbiddenSubscriptionsReturnStompError(String)[2]",
+            "status": "passed"
+          },
+          {
+            "name": "forbiddenSubscriptionsReturnStompError(String)[3]",
+            "status": "passed"
+          },
+          {
+            "name": "forbiddenSubscriptionsReturnStompError(String)[4]",
+            "status": "passed"
+          },
+          {
+            "name": "forbiddenSubscriptionsReturnStompError(String)[5]",
+            "status": "passed"
+          },
+          {
+            "name": "forbiddenSubscriptionsReturnStompError(String)[6]",
+            "status": "passed"
+          },
+          {
+            "name": "rolledBackAccountChangeLeavesExistingSocketUsable",
+            "status": "passed"
+          },
+          {
+            "name": "directBrokerAndUnknownApplicationPublishesReturnStompError(String)[1]",
+            "status": "passed"
+          },
+          {
+            "name": "directBrokerAndUnknownApplicationPublishesReturnStompError(String)[2]",
+            "status": "passed"
+          },
+          {
+            "name": "directBrokerAndUnknownApplicationPublishesReturnStompError(String)[3]",
+            "status": "passed"
+          },
+          {
+            "name": "connectRequiresCsrfFromAuthenticatedHttpSession(String)[1]",
+            "status": "passed"
+          },
+          {
+            "name": "connectRequiresCsrfFromAuthenticatedHttpSession(String)[2]",
+            "status": "passed"
+          },
+          {
+            "name": "committedAccountChangesCloseAllExistingSocketsAndPreserveOtherUsers(String)[1]",
+            "status": "passed"
+          },
+          {
+            "name": "committedAccountChangesCloseAllExistingSocketsAndPreserveOtherUsers(String)[2]",
+            "status": "passed"
+          },
+          {
+            "name": "committedAccountChangesCloseAllExistingSocketsAndPreserveOtherUsers(String)[3]",
+            "status": "passed"
+          },
+          {
+            "name": "nonParticipantSendReturnsPrivateErrorWithoutPersisting",
+            "status": "passed"
+          },
+          {
+            "name": "canonicalEmployeeNumbersDeliverMessagesAndBoundedReadReceiptsEvenForLegacyRoomAliases",
+            "status": "passed"
+          },
+          {
+            "name": "simultaneousParticipantsSendWithoutDeadlockOrDuplicatePersistence",
+            "status": "passed"
+          },
+          {
+            "name": "rejectedOrAbsentConnectCannotPublishFollowingFramesInSameWebSocketMessage(String)[1]",
+            "status": "passed"
+          },
+          {
+            "name": "rejectedOrAbsentConnectCannotPublishFollowingFramesInSameWebSocketMessage(String)[2]",
+            "status": "passed"
+          },
+          {
+            "name": "rejectedOrAbsentConnectCannotPublishFollowingFramesInSameWebSocketMessage(String)[3]",
+            "status": "passed"
+          },
+          {
+            "name": "anonymousWebSocketHandshakeIsRejected",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "suite": "com.erp.NativePerformanceTest",
+        "tests": 1,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 1,
+        "cases": [
+          {
+            "name": "measureOwnedNativeEnvironment",
+            "status": "skipped"
+          }
+        ]
+      }
+    ],
+    "logSha256": "25672393b228dd74bca32440baf1e5a75e4848e6ec266797517a52c070d07032",
+    "resultLines": [
+      "[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 49.92 s -- in com.erp.AiModelEvaluationTest",
+      "[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.erp.NativePerformanceTest",
+      "[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 21.16 s -- in com.erp.BrowserFlowIntegrationTest",
+      "[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.077 s -- in com.erp.LocalLlmClientTest",
+      "[INFO] Tests run: 47, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.15 s -- in com.erp.CoreFlowIntegrationTest",
+      "[INFO] Tests run: 23, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.932 s -- in com.erp.MessengerWebSocketIntegrationTest",
+      "[INFO] Tests run: 85, Failures: 0, Errors: 0, Skipped: 1",
+      "[INFO] BUILD SUCCESS"
+    ],
+    "passed": 84,
+    "realModelEvaluationEnabled": true,
+    "skipped": "NativePerformanceTest; no new performance measurements"
+  },
+  "followup": {
+    "reason": "Preserve the quoted title boundary before trailing 3-line requests; the previous full run covered the same model questions without trailing line counts.",
+    "command": "ERP_DEMO_OUTPUT=<screenshots> ./mvnw --batch-mode '-Dtest=CoreFlowIntegrationTest#aiAppendsOnlyMissingSourceLabelsAfterSuccessfulModelCompletion,BrowserFlowIntegrationTest' package",
+    "junitPassed": 2,
+    "chromiumFlowsPassed": 12,
+    "logSha256": "c7074861860defaa80e4ab87515cd2e709f33dbe3e33eee7bf10b4729031b856",
+    "browserLogSha256": "4bc4d1eeae36b57f7c3e407df5e2c67cab2807b4b51b649abb0d62b6dc9a0210"
+  },
+  "frontend": {
+    "nodeVersion": "v26.7.0",
+    "nodeTestsPassed": 7,
+    "npmCiSucceeded": true,
+    "npmAuditReportedVulnerabilities": 0,
+    "productionBuildSucceeded": true,
+    "warPackagingSucceeded": true
+  },
+  "ai": {
+    "modelTrials": 32,
+    "generationAttempts": 20,
+    "generationFailures": 0,
+    "fixtureFactAndSourceChecksPassed": 20,
+    "directResponsesPassed": 12,
+    "rawAnswersReviewed": true,
+    "samePromptHashesWithinEachCase": true,
+    "results": [
+      {
+        "model": "qwen3.5:2b",
+        "attempts": 16,
+        "failures": 0,
+        "keywordPasses": 16,
+        "modelAttempts": 10,
+        "modelFailures": 0,
+        "modelKeywordPasses": 10,
+        "completedModelResponses": 10,
+        "firstTokenP50Ms": 35,
+        "firstTokenSampleP95Ms": 221,
+        "durationP50Ms": 811,
+        "durationSampleP95Ms": 2012
+      },
+      {
+        "model": "qwen3.5:9b",
+        "attempts": 16,
+        "failures": 0,
+        "keywordPasses": 16,
+        "modelAttempts": 10,
+        "modelFailures": 0,
+        "modelKeywordPasses": 10,
+        "completedModelResponses": 10,
+        "firstTokenP50Ms": 668,
+        "firstTokenSampleP95Ms": 951,
+        "durationP50Ms": 1934,
+        "durationSampleP95Ms": 5834
+      }
+    ],
+    "rawPath": "performance/results/ai-quality-20261101-cited/responses.jsonl",
+    "summaryPath": "performance/results/ai-quality-20261101-cited/summary.json",
+    "nativeBrowserPassed": 5,
+    "nativeEvidence": "docs/refactoring/review-evidence/ai-browser-real-20261101.json",
+    "nativePageErrors": 0,
+    "warSha256": "aa336910e547732b78cef3029751374c79cdc29004d0eb51f97ecd7a35f7181c",
+    "initialSourceOmission": "docs/refactoring/review-evidence/ai-source-omission-20261101.json"
+  },
+  "review": {
+    "roles": [
+      "AI Engineer",
+      "Frontend Developer",
+      "Technical Writer",
+      "Application Security Engineer"
+    ],
+    "resolved": [
+      "Stale department in AI notice context",
+      "Floating panels cover mobile menu",
+      "Hidden messenger marks new messages read",
+      "Quoted-title digits interpreted as document ID",
+      "Trailing summary line count crosses a removed quoted title",
+      "Model omits document source labels"
+    ],
+    "testHarnessCorrection": "Playwright DOM role locators did not filter inert; test actual Chromium accessibility tree and focus blocking. SSE raw capture uses a passive Response.clone because Chromium response.body was unavailable for this stream."
+  },
+  "screenshots": [
+    {
+      "path": "docs/refactoring/screenshots/portfolio-20261101/ai-answer-fixture.png",
+      "sha256": "54c29ca6e1309b27978d46759a22a136f1148b8e9dc8880edd291ce9481341bd",
+      "bytes": 226041,
+      "visuallyInspected": true
+    },
+    {
+      "path": "docs/refactoring/screenshots/portfolio-20261101/ai-answer-real-model.png",
+      "sha256": "2e069e92797d063d9627acfedb3e39b9f7bb63305eb0260d52844c6dfe6319ee",
+      "bytes": 284441,
+      "visuallyInspected": true
+    },
+    {
+      "path": "docs/refactoring/screenshots/portfolio-20261101/approval-completed.png",
+      "sha256": "102949ca53ff6fbf1ff881099587dad72439dd6e5cbf4e34c3bc1257486643a6",
+      "bytes": 241567,
+      "visuallyInspected": true
+    },
+    {
+      "path": "docs/refactoring/screenshots/portfolio-20261101/messenger-read.png",
+      "sha256": "a40689d83ed2017f44e9e971fb6f516838b6bc728958b082646f8f99f2c0ba8b",
+      "bytes": 211852,
+      "visuallyInspected": true
+    },
+    {
+      "path": "docs/refactoring/screenshots/portfolio-20261101/mobile-menu.png",
+      "sha256": "4ea3f27ac24dbeb190a2aa69e5364df537d9eb21925ad34698ac944a1f519d5d",
+      "bytes": 118641,
+      "visuallyInspected": true
+    },
+    {
+      "path": "docs/refactoring/screenshots/portfolio-20261101/workspace.png",
+      "sha256": "34618cde3f6aeaa78fb40414ab8fd5d73bfb8ba680a3616c8d330b3609252470",
+      "bytes": 206182,
+      "visuallyInspected": true
+    }
+  ],
+  "sourceSha256": {
+    "src/main/java/com/erp/service/AiService.java": "c99d7bc958a8530b45f78a63d5757630a5d7ba085ea8146ee7b39cb707cf00ee",
+    "src/main/java/com/erp/service/NoticeService.java": "d40b4f844c23a7eedd1007fb98ef88d43c6e626a16c6dfe2f434c2cd9d99f84a",
+    "src/main/java/com/erp/mapper/NoticeMapper.java": "c56b9e7b7fdf23d3a0fea280316b15c5e23356712c6683b00ea3c1072f8029b7",
+    "src/main/resources/mapper/notice_mapper.xml": "b075cf4558c7ab0b75b9e22ef1055c29c9caa1e8d0ba213349bab541ac66f03e",
+    "src/main/resources/mapper/approval_mapper.xml": "c88bff1d41a2ad798e04691d0e5bca27e811b14c51a0d82e64993b50129ad7bf",
+    "frontend/src/layout/AppLayout.jsx": "a50b099ce43e5058e9ea515ce22f80b0375b423926585f7dcdc8c66cff4298f8",
+    "frontend/src/user/UserPages.jsx": "deb4af457f270b123af3583d605b65e2cee47382b89a3726d1e503dae844a1f7",
+    "frontend/src/user/user.css": "bf10e85363bbfd1ff04482141a1f943af4c19e172de36328c500e5415b8b8e10",
+    "frontend/e2e/core-flow.spec.js": "32551a790bf689a69964f1947161fb6f31350cbd83103aab5688686a58e867b7",
+    "src/test/java/com/erp/BrowserFlowIntegrationTest.java": "e90a760a73ad154b259ca5c40985c0c794d9b1573b6162eb349a261073d6e778",
+    "src/test/java/com/erp/CoreFlowIntegrationTest.java": "fa240aa2fea123fc2f7f8930841e8f8e5e2bd720df08fc99e1c635da09715401",
+    "src/main/resources/static/resources/app/app.js": "e461011f83836a8ad0f1e00e0fd8862987df1a1a946c07c51c68ebad854ef3fd",
+    "src/main/resources/static/resources/app/app.css": "9f1f3b8794a3ddc0c7a00d61c9b8df5c31a2795d93f4cb8a1e976122b4d8126c",
+    "docs/refactoring/review-evidence/ai-browser-real-20261101.mjs": "be9d5e0b4db7c0fb43ee01f767736b8c156c1f32d672027783b3a5e8f9ef352d"
+  },
+  "environment": {
+    "nativeDemoRoot": ".local-dev/portfolio-demo-20261101",
+    "nativeAppStopped": true,
+    "nativeDbStopped": true,
+    "existingSourceInitializedOrUpgraded": false,
+    "ollamaServerStartedForVerificationAndTerminated": true,
+    "performanceScopeRemains1000": true,
+    "newPerformanceRun": false
+  },
+  "remoteCi": {
+    "commit": "256c73dae697c00d13bb34fe333bc6407ff9e751",
+    "conclusion": "success",
+    "url": "https://github.com/hyun5555/ERP-Project/actions/runs/39767123449",
+    "currentChangesRunRemotely": false
+  },
+  "limitations": [
+    "Fixture keyword/source checks and inspected sample answers are not general natural-language accuracy.",
+    "Server source labels identify retrieved documents; they do not verify every generated claim.",
+    "Existing and in-flight AI answers are not retroactively erased after department changes.",
+    "Chromium keyboard and accessibility tree checks only; no screen reader, Firefox or WebKit run.",
+    "No new large-data performance, production deployment, video recording, commit or push in this turn."
+  ]
+}

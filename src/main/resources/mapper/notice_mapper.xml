@@ -83,11 +83,13 @@
 			DATE(n.noticedate) AS noticedate, n.is_important, u.name AS username
 		FROM notice n
 		LEFT JOIN user u ON u.usernum = n.usernum
-		WHERE (#{admin} = TRUE
+		JOIN user reader ON reader.usernum = #{usernum} AND reader.user_status = '재직'
+		WHERE (reader.authority = TRUE
 		OR EXISTS (
 			SELECT 1 FROM notice_team nt
 			WHERE nt.notice_no = n.notice_no
-			AND (nt.notice_team = '999' OR nt.notice_team = #{teamCode})
+			AND (nt.notice_team = '999' OR nt.notice_team = CASE reader.team
+				WHEN '개발' THEN '100' WHEN '디자인' THEN '200' WHEN '경영지원' THEN '300' END)
 		))
 		<if test="noticeNo != null">AND n.notice_no = #{noticeNo}</if>
 		<if test="title != null and title != ''">AND INSTR(n.notice_title, #{title}) &gt; 0</if>

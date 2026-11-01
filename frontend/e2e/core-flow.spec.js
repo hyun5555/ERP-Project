@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { test, expect } from '@playwright/test'
 
 const suffix = process.env.ERP_E2E_USER_SUFFIX
@@ -12,6 +13,13 @@ const users = {
   admin: { id: `e2e-${suffix}-admin`, name: `E2E관리자${suffix}` },
   formA: { id: `e2e-${suffix}-form-a`, name: `E2E수정A${suffix}` },
   formB: { id: `e2e-${suffix}-form-b`, name: `E2E수정B${suffix}` }
+}
+
+async function demoScreenshot(page, name) {
+  if (!process.env.ERP_DEMO_OUTPUT) return
+  const directory = resolve(process.env.ERP_DEMO_OUTPUT)
+  await mkdir(directory, { recursive: true })
+  await page.screenshot({ path: resolve(directory, `${name}.png`), fullPage: true, animations: 'disabled' })
 }
 
 async function apiLogin(context, user, userPassword = password) {
@@ -71,6 +79,7 @@ test('UI login, ordered approval and attachment download preserve the document a
   await page.getByRole('button', { name: '로그인', exact: true }).click()
   await Promise.all(initialData)
   await expect(page).toHaveURL(/\/ERP\/main\.do$/)
+  await demoScreenshot(page, 'workspace')
   await page.getByRole('link', { name: '결재 작성', exact: true }).click()
   await page.getByRole('combobox', { name: '문서 구분', exact: true }).selectOption('기안서')
   await page.getByLabel('제목', { exact: true }).fill(title)
@@ -120,6 +129,7 @@ test('UI login, ordered approval and attachment download preserve the document a
   await openWorkspace(page, path)
   await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
   await expect(page.getByText('승인', { exact: true }).first()).toBeVisible()
+  await demoScreenshot(page, 'approval-completed')
 })
 
 test('native idle session expiry redirects an in-app read to login', async ({ page, request }) => {
@@ -263,7 +273,7 @@ test('messenger marks messages read only in the visible selected conversation', 
       await (await delivered).finished()
       await receiver.bringToFront()
       expect(receivedRooms.find((room) => room.roomNo === roomNo).unreadCount).toBeGreaterThan(0)
-      await expect(receiver.getByRole('button', { name: /^사내 메신저 (열기|닫기)$/ }).locator('b')).toHaveText(String(receivedRooms.reduce((sum, room) => sum + room.unreadCount, 0)))
+      await expect(receiver.getByRole('button', { name: /^사내 메신저 (열기|닫기)$/, includeHidden: true }).locator('b')).toHaveText(String(receivedRooms.reduce((sum, room) => sum + room.unreadCount, 0)))
       // Complete the receiver callback's room refresh and rendered UI before checking forbidden reads.
       await receiver.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))))
       expect(readRequests).toBe(readsBeforeDelivery)
@@ -309,6 +319,20 @@ test('messenger marks messages read only in the visible selected conversation', 
     await receiver.getByRole('button', { name: new RegExp(users.drafter.name) }).click()
     await expect(receiver.getByText(inOtherRoom, { exact: true })).toBeVisible()
     await expect.poll(async () => (await messageState(inOtherRoom)).readAt).not.toBeNull()
+    await expect(page.locator('.messenger-message').filter({ hasText: inOtherRoom }).locator('small')).toHaveText(/ · 읽음$/)
+    await receiver.setViewportSize({ width: 390, height: 844 })
+    await receiver.getByRole('button', { name: '메뉴 열기', exact: true }).click()
+    await expect(receiver.getByRole('dialog', { name: '전체 메뉴', exact: true })).toBeVisible()
+    await expect(receiver.getByLabel('사내 메신저', { exact: true })).toHaveCount(0)
+    const duringMenu = await send()
+    await expect(page.locator('.messenger-message').filter({ hasText: duringMenu }).locator('small')).toHaveText(/ · 안 읽음$/)
+    await receiver.keyboard.press('Escape')
+    await expect(receiver.getByRole('button', { name: '메뉴 열기', exact: true })).toBeFocused()
+    await expect(receiver.getByLabel('사내 메신저', { exact: true }).getByText(users.drafter.name, { exact: true })).toBeVisible()
+    await expect(receiver.getByText(duringMenu, { exact: true })).toBeVisible()
+    await expect.poll(async () => (await messageState(duringMenu)).readAt).not.toBeNull()
+    await expect(page.locator('.messenger-message').filter({ hasText: duringMenu }).locator('small')).toHaveText(/ · 읽음$/)
+    await demoScreenshot(page, 'messenger-read')
   } finally {
     await receivingContext.close()
   }
@@ -381,4 +405,130 @@ test('employee form history changes reset values before updating the new target'
   await expect(page.getByRole('heading', { name: users.formB.name, exact: true, level: 1 })).toBeVisible()
   expect((await (await page.request.get(`/ERP/api/users/${users.formA.id}`)).json()).name).toBe(users.formA.name)
   expect((await (await page.request.get(`/ERP/api/users/${users.formB.id}`)).json()).name).toBe(users.formB.name)
+})
+
+test('employee detail is a keyboard link while row selection and clicking remain independent', async ({ page }) => {
+  await apiLogin(page.context(), users.admin)
+  const listPath = `/ERP/user/list.do?searchKey=usernum&searchWord=${encodeURIComponent(users.formA.id)}`
+  await openWorkspace(page, listPath)
+  const selection = page.getByRole('checkbox', { name: `${users.formA.name} 선택`, exact: true })
+  const detail = page.getByRole('link', { name: new RegExp(`${users.formA.name}.*${users.formA.id}`) })
+  await expect(detail).toHaveAttribute('href', `/ERP/user/view.do?usernum=${encodeURIComponent(users.formA.id)}`)
+  await selection.focus()
+  await page.keyboard.press('Tab')
+  await expect(detail).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('heading', { name: users.formA.name, exact: true, level: 1 })).toBeVisible()
+  await page.getByRole('button', { name: '← 목록으로', exact: true }).click()
+  await selection.check()
+  await expect(page).toHaveURL(/\/ERP\/user\/list\.do$/)
+  await expect(page.getByRole('button', { name: '선택 삭제', exact: true })).toBeEnabled()
+  await selection.uncheck()
+  await expect(page.getByRole('button', { name: '선택 삭제', exact: true })).toBeDisabled()
+  await selection.locator('xpath=ancestor::tr').getByRole('cell', { name: '개발', exact: true }).click()
+  await expect(page.getByRole('heading', { name: users.formA.name, exact: true, level: 1 })).toBeVisible()
+})
+
+test('mobile menu excludes closed links, contains focus and restores it across close and resize', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await apiLogin(page.context(), users.drafter)
+  await openWorkspace(page, '/ERP/main.do')
+  const menu = page.getByRole('button', { name: '메뉴 열기', exact: true })
+  const sidebar = page.locator('#workspace-menu')
+  const accessibility = await page.context().newCDPSession(page)
+  const navigationExposed = async () => (await accessibility.send('Accessibility.getFullAXTree')).nodes.some((node) =>
+    !node.ignored && node.role?.value === 'navigation' && node.name?.value === '주요 메뉴')
+  const expectClosedMenu = async () => {
+    await expect(sidebar).toHaveJSProperty('inert', true)
+    await expect.poll(navigationExposed).toBe(false)
+    await menu.focus()
+    await sidebar.locator('a[href]').first().evaluate((link) => link.focus())
+    await expect(menu).toBeFocused()
+  }
+  await expectClosedMenu()
+  await page.keyboard.press('Tab')
+  expect(await sidebar.evaluate((element) => element.contains(document.activeElement))).toBe(false)
+  await page.getByRole('button', { name: 'AI 챗봇 열기', exact: true }).click()
+  const chat = page.getByLabel('AI 업무 도우미', { exact: true })
+  await chat.getByRole('textbox', { name: '챗봇 메시지', exact: true }).fill('메뉴 복귀 확인')
+  await menu.focus()
+  await page.keyboard.press('Enter')
+  const dialog = page.getByRole('dialog', { name: '전체 메뉴', exact: true })
+  const close = dialog.getByRole('button', { name: '메뉴 닫기', exact: true })
+  const brand = sidebar.getByRole('link', { name: 'EZEN', exact: true })
+  const last = dialog.getByRole('link', { name: '공지사항', exact: true })
+  await expect(close).toBeFocused()
+  await expect.poll(navigationExposed).toBe(true)
+  await expect(page.locator('.app-column')).toHaveJSProperty('inert', true)
+  await expect(chat).toBeHidden()
+  await expect(page.locator('.floating-actions')).toBeHidden()
+  await page.keyboard.press('Shift+Tab')
+  await expect(brand).toBeFocused()
+  await page.keyboard.press('Shift+Tab')
+  await expect(last).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(brand).toBeFocused()
+  await demoScreenshot(page, 'mobile-menu')
+  await page.keyboard.press('Escape')
+  await expect(menu).toBeFocused()
+  await expect(chat).toBeVisible()
+  await expect(chat.getByRole('textbox', { name: '챗봇 메시지', exact: true })).toHaveValue('메뉴 복귀 확인')
+  await expect(sidebar).toHaveJSProperty('inert', true)
+  await expect(menu).toHaveAttribute('aria-expanded', 'false')
+  await menu.press('Enter')
+  await close.click()
+  await expect(menu).toBeFocused()
+  await menu.press('Enter')
+  await last.click()
+  await expect(page.getByRole('heading', { name: '공지사항', exact: true, level: 1 })).toBeVisible()
+  await expect(menu).toBeFocused()
+  await menu.press('Enter')
+  await page.setViewportSize({ width: 1280, height: 900 })
+  await expect(sidebar).toHaveJSProperty('inert', false)
+  await expect(page.getByRole('navigation', { name: '주요 메뉴', exact: true })).toBeVisible()
+  await expect.poll(navigationExposed).toBe(true)
+  await expect(page.getByRole('dialog', { name: '전체 메뉴', exact: true })).toHaveCount(0)
+  await expect(brand).toBeFocused()
+  await expect(page.locator('.app-column')).toHaveJSProperty('inert', false)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expectClosedMenu()
+})
+
+test('AI chat renders a partial token before completion, explains failure and accepts the next question', async ({ page }) => {
+  await apiLogin(page.context(), users.drafter)
+  await openWorkspace(page, '/ERP/main.do')
+  await page.getByRole('button', { name: 'AI 챗봇 열기', exact: true }).click()
+  const chat = page.getByLabel('AI 업무 도우미', { exact: true })
+  const input = chat.getByRole('textbox', { name: '챗봇 메시지', exact: true })
+  const send = chat.getByRole('button', { name: '메시지 보내기', exact: true })
+  const title = `브라우저 AI 공지 999999 ${suffix}`
+  const question = `공지 "${title}" 3줄로 요약해줘`
+  const notices = await (await page.request.get(`/ERP/api/notices?searchWord=${encodeURIComponent(title)}`)).json()
+  const source = notices.items.find((notice) => notice.title === title)
+  expect(source).toBeDefined()
+  const completeAnswer = async () => {
+    await expect(chat.locator('.bot-message').last().locator('span')).toHaveText('시연 자료는')
+    await expect(input).toBeDisabled()
+    expect((await page.request.get('/ERP/api/session?e2eAi=complete')).ok()).toBeTruthy()
+    await expect(chat.locator('.bot-message').last().locator('span')).toHaveText(`시연 자료는 금요일까지 제출합니다.\n\n[조회 자료]\n공지 ${source.noticeNo}번 ${source.title}`)
+    await expect(chat.locator('.bot-message').last().locator('small')).toHaveText(/첫 응답 \d+ms · 전체 \d+ms · browser-fixture/)
+    await expect(input).toBeEnabled()
+  }
+  await input.fill(question)
+  await send.click()
+  await completeAnswer()
+  await demoScreenshot(page, 'ai-answer-fixture')
+  await input.fill(`${question} 모델 오류 유도`)
+  await send.click()
+  await expect(chat.getByRole('alert')).toHaveText('로컬 AI가 응답하지 않습니다. 모델 실행 상태를 확인해 주세요.')
+  await expect(input).toBeEnabled()
+  await input.fill(question)
+  await send.click()
+  await completeAnswer()
+  await expect(chat.getByRole('alert')).toHaveCount(0)
+  await input.fill('점심 메뉴 추천해줘')
+  await send.click()
+  await expect(chat.locator('.bot-message').last().locator('span')).toHaveText('공지와 현재 내 순서인 결재 자료만 안내할 수 있습니다. 공지 또는 결재 질문을 입력해 주세요.')
+  await expect(chat.locator('.bot-message').last().locator('small')).toContainText('context-only')
+  await expect(input).toBeEnabled()
 })

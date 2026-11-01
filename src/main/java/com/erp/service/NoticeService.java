@@ -80,13 +80,7 @@ public class NoticeService {
 	}
 
 	public List<noticeVO> findForAi(userVO user, Integer noticeNo, String title) {
-		String teamCode = switch (user.getTeam() == null ? "" : user.getTeam()) {
-			case "개발" -> "100";
-			case "디자인" -> "200";
-			case "경영지원" -> "300";
-			default -> null;
-		};
-		return noticeMapper.selectRecentForUser(teamCode, user.isAuthority(), noticeNo, title);
+		return noticeMapper.selectRecentForUser(user.getUsernum(), noticeNo, title);
 	}
 
 }
